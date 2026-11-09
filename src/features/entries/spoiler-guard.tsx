@@ -1,39 +1,40 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
+/** Inert wrapper when parent gates spoilers (keeps call sites simple). */
 export function SpoilerGuard({
   active,
   children,
-  className,
 }: {
   active: boolean;
   children: ReactNode;
-  className?: string;
 }) {
-  const [revealed, setRevealed] = useState(false);
+  if (active) return null;
+  return <>{children}</>;
+}
 
-  if (!active || revealed) {
-    return <div className={className}>{children}</div>;
-  }
+export function SpoilerGate({
+  active,
+  revealed,
+  onReveal,
+}: {
+  active: boolean;
+  revealed: boolean;
+  onReveal: () => void;
+}) {
+  if (!active || revealed) return null;
 
   return (
-    <div className={cn("relative overflow-hidden rounded-xl", className)}>
-      <div className="pointer-events-none select-none blur-md" aria-hidden>
-        {children}
-      </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/55 px-4 text-center backdrop-blur-[2px]">
-        <p className="text-sm font-medium">Contains spoilers</p>
-        <button
-          type="button"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold"
-          onClick={() => setRevealed(true)}
-        >
-          Reveal
-        </button>
-      </div>
+    <div className="border-border/80 bg-muted/40 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-3 py-2.5">
+      <p className="text-muted-foreground text-sm">
+        Verdict and review are hidden — spoilers
+      </p>
+      <Button type="button" variant="outline" size="sm" onClick={onReveal}>
+        Reveal
+      </Button>
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { EntryGallery } from "@/features/entries/entry-gallery";
 import { MediaTypeBadge } from "@/features/entries/media-type-badge";
 import { ProgressControls } from "@/features/entries/progress-controls";
 import { RatingStars } from "@/features/entries/rating-stars";
-import { SpoilerGuard } from "@/features/entries/spoiler-guard";
+import { SpoilerGate } from "@/features/entries/spoiler-guard";
 import {
   CONSUMPTION_FORMAT_LABELS,
   MEDIA_TYPE_GRADIENT,
@@ -67,14 +67,14 @@ function MetaPills({ entry }: { entry: MediaEntry }) {
 
 function ScoreBadge({ entry }: { entry: MediaEntry }) {
   return (
-    <div className="rounded-2xl bg-amber-400 px-4 py-3 shadow-lg shadow-amber-900/40">
+    <div className="rounded-xl bg-amber-400 px-3 py-2 shadow-md shadow-amber-900/30">
       <p className="text-[10px] font-bold tracking-widest text-amber-950 uppercase">
         Score
       </p>
-      <div className="mt-1 flex items-center justify-center">
+      <div className="mt-0.5 flex items-center justify-center">
         <RatingStars
           value={entry.rating}
-          size="lg"
+          size="md"
           variant="light"
           showValue
         />
@@ -94,6 +94,7 @@ function ProgressTrack({
   return (
     <ProgressControls
       entry={entry}
+      compact
       onChange={(next) => onEntryChange(next)}
     />
   );
@@ -146,42 +147,48 @@ function ReviewBlocks({
   tags: string[];
   alwaysShowSpoilers?: boolean;
 }) {
-  const spoilers = entry.has_spoilers && !alwaysShowSpoilers;
+  const gate = entry.has_spoilers && !alwaysShowSpoilers;
+  const [revealed, setRevealed] = useState(false);
+  const hide = gate && !revealed;
   const body =
     entry.review_body || "No review yet — tap Edit above to write one.";
 
   return (
     <>
-      {entry.verdict ? (
+      <SpoilerGate
+        active={gate}
+        revealed={revealed}
+        onReveal={() => setRevealed(true)}
+      />
+
+      {!hide && entry.verdict ? (
         <Card className="border-white/10 bg-card/60">
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="text-base">Verdict</CardTitle>
           </CardHeader>
           <CardContent>
-            <SpoilerGuard active={spoilers}>
-              <p className="text-lg italic">{entry.verdict}</p>
-            </SpoilerGuard>
+            <p className="text-base italic">{entry.verdict}</p>
           </CardContent>
         </Card>
       ) : null}
 
-      <Card className="border-white/10 bg-card/60">
-        <CardHeader>
-          <CardTitle className="text-base">
-            {entry.review_title || "What I thought"}
-          </CardTitle>
-          {entry.has_spoilers ? (
-            <CardDescription className="text-amber-700 dark:text-amber-200/90">
-              Contains spoilers
-            </CardDescription>
-          ) : null}
-        </CardHeader>
-        <CardContent>
-          <SpoilerGuard active={spoilers}>
+      {!hide ? (
+        <Card className="border-white/10 bg-card/60">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">
+              {entry.review_title || "What I thought"}
+            </CardTitle>
+            {entry.has_spoilers ? (
+              <CardDescription className="text-amber-700 dark:text-amber-200/90">
+                Contains spoilers
+              </CardDescription>
+            ) : null}
+          </CardHeader>
+          <CardContent>
             <CollapsibleReviewBody body={body} />
-          </SpoilerGuard>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {tags.length > 0 ? (
         <div className="space-y-2">
@@ -218,13 +225,13 @@ export function CinematicLayout({
 
   return (
     <div
-      className="mx-auto flex w-full max-w-5xl flex-col gap-6"
+      className="mx-auto flex w-full max-w-5xl flex-col gap-4"
       style={accentStyle}
     >
       <section
-        className={`relative min-h-[380px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl md:min-h-[460px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+        className={`relative min-h-[240px] overflow-hidden rounded-2xl border border-white/10 shadow-xl md:min-h-[280px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
         style={{
-          boxShadow: `0 25px 50px -12px var(--entry-glow, rgb(0 0 0 / 0.5))`,
+          boxShadow: `0 20px 40px -16px var(--entry-glow, rgb(0 0 0 / 0.45))`,
         }}
       >
         {heroUrl ? (
@@ -239,14 +246,14 @@ export function CinematicLayout({
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
 
-        <div className="relative z-10 flex h-full min-h-[380px] flex-col justify-end gap-6 p-6 pb-8 md:min-h-[460px] md:flex-row md:items-end md:gap-8 md:p-10">
+        <div className="relative z-10 flex h-full min-h-[240px] flex-col justify-end gap-4 p-4 pb-5 md:min-h-[280px] md:flex-row md:items-end md:gap-6 md:p-6">
           <div className="shrink-0">
             {posterUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={posterUrl}
                 alt=""
-                className="w-28 rounded-2xl object-cover shadow-2xl ring-1 ring-white/15 md:w-44"
+                className="w-20 rounded-xl object-cover shadow-lg ring-1 ring-white/15 sm:w-24 md:w-32"
               />
             ) : (
               <div className="bg-card/60 flex w-28 flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 p-4 text-center md:w-44 md:min-h-[240px]">
@@ -262,28 +269,20 @@ export function CinematicLayout({
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <MetaPills entry={entry} />
-            <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight text-white md:text-5xl">
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl">
               {entry.title}
             </h1>
             {entry.original_title ? (
               <p className="text-white/65 text-sm">{entry.original_title}</p>
             ) : null}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               <ScoreBadge entry={entry} />
-              <div className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white/80 backdrop-blur">
-                <p className="text-[10px] tracking-widest uppercase opacity-70">
-                  Progress
-                </p>
-                <p className="font-semibold tabular-nums">
-                  {formatProgress(entry)}
-                </p>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_260px]">
         <div className="space-y-4">
           <ProgressTrack entry={entry} onEntryChange={onEntryChange} />
           {entry.synopsis ? (

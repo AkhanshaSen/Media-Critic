@@ -55,8 +55,8 @@ export function ProgressControls({
   return (
     <div
       className={cn(
-        "border-border/80 bg-card/50 space-y-3 rounded-2xl border p-4 shadow-lg shadow-black/20",
-        compact && "p-3",
+        "border-border/80 bg-card/50 space-y-2 rounded-xl border shadow-sm shadow-black/15",
+        compact ? "p-2.5" : "space-y-3 p-4 shadow-lg shadow-black/20",
       )}
     >
       <div className="flex items-end justify-between gap-3">
@@ -64,16 +64,21 @@ export function ProgressControls({
           <p className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
             {labels.current}
           </p>
-          <p className="text-lg font-semibold tabular-nums tracking-tight">
+          <p
+            className={cn(
+              "font-semibold tabular-nums tracking-tight",
+              compact ? "text-base" : "text-lg",
+            )}
+          >
             {formatProgress(display)}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="min-w-10 rounded-full"
+            className="h-7 min-w-9 rounded-full px-2 text-xs"
             disabled={pending || display.progress_current <= 0}
             onClick={() => bump(-1)}
             aria-label="Decrease progress"
@@ -82,8 +87,9 @@ export function ProgressControls({
           </Button>
           <Button
             type="button"
+            variant="outline"
             size="sm"
-            className="min-w-14 rounded-full font-semibold shadow-md shadow-primary/25"
+            className="h-7 min-w-10 rounded-full px-2 text-xs font-semibold"
             disabled={
               pending ||
               (display.progress_total != null &&
