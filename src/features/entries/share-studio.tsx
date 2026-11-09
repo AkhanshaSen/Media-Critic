@@ -19,8 +19,6 @@ import {
 } from "@/features/entries/data";
 import {
   ShareCardPreview,
-  buildShareCaption,
-  buildShareLink,
   shareEntryBundle,
   type SharePreviewTheme,
 } from "@/features/entries/share-cards";
@@ -77,31 +75,6 @@ export function ShareStudioDialog({
     setBusy(false);
   }
 
-  async function copyLink() {
-    try {
-      await navigator.clipboard.writeText(buildShareLink(entry.id));
-      toast({ title: "Link copied" });
-    } catch {
-      setError("Could not copy link.");
-      toast({ title: "Could not copy link" });
-    }
-  }
-
-  async function copyCaption() {
-    try {
-      await navigator.clipboard.writeText(
-        buildShareCaption(entry, {
-          includeShelfAverage: showShelfAvg,
-          shelfAverage,
-        }),
-      );
-      toast({ title: "Caption copied", description: "Includes the entry link." });
-    } catch {
-      setError("Could not copy caption.");
-      toast({ title: "Could not copy caption" });
-    }
-  }
-
   async function captureBlob(): Promise<Blob | null> {
     const node = exportRef.current;
     if (!node) return null;
@@ -141,7 +114,7 @@ export function ShareStudioDialog({
               : "Copied",
         description:
           result.method === "share"
-            ? "Link, caption, and card image."
+            ? "Link and card image."
             : result.method === "download"
               ? "Caption copied; image saved — attach it if your app needs a file."
               : undefined,
@@ -166,8 +139,7 @@ export function ShareStudioDialog({
           <div className="min-w-0 space-y-0.5">
             <DialogTitle>Share</DialogTitle>
             <DialogDescription>
-              Pick a card, then Share… to send your link, caption, and image
-              together. Copy link is URL only.
+              Pick a card and tap Share to send the link and image.
             </DialogDescription>
           </div>
           <DialogClose />
@@ -235,7 +207,6 @@ export function ShareStudioDialog({
             </div>
           </div>
 
-          {/* Off-screen export target for the selected card */}
           <div
             aria-hidden
             className="pointer-events-none fixed top-0 left-[-9999px] z-[-1]"
@@ -252,43 +223,14 @@ export function ShareStudioDialog({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void shareBundle()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-11 w-full items-center justify-center rounded-lg px-3 text-sm font-semibold sm:w-auto sm:self-start"
-            >
-              {busy ? "Working…" : "Share…"}
-            </button>
-            <p className="text-muted-foreground text-[11px]">
-              Opens the system share sheet with your entry link, caption, and
-              card image.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void copyLink()}
-                title="Copies the entry URL only. Use Share… to include the image."
-                className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
-              >
-                Copy link
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void copyCaption()}
-                className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
-              >
-                Copy caption
-              </button>
-            </div>
-            <p className="text-muted-foreground text-[11px]">
-              Copy link is URL only — use Share… when you want the image
-              attached.
-            </p>
-          </div>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void shareBundle()}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-11 w-full items-center justify-center rounded-lg px-3 text-sm font-semibold"
+          >
+            {busy ? "Working…" : "Share"}
+          </button>
 
           {error ? <p className="text-destructive text-xs">{error}</p> : null}
         </DialogBody>
