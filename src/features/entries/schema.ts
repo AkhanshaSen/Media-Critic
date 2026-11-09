@@ -135,6 +135,11 @@ export type MediaEntry = {
   review_body: string | null;
   verdict: string | null;
   has_spoilers: boolean;
+  cover_image_id: string | null;
+  /** Storage path in entry-images bucket (when cover exists). */
+  cover_path: string | null;
+  /** Short-lived signed URL for display (client-filled). */
+  cover_url: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -362,4 +367,4 @@ export function parseTagsText(tagsText: string): string[] {
 }
 
 export const ENTRY_SELECT =
-  "id, title, original_title, media_type, year, status, progress_current, progress_total, progress_unit, consumption_format, volume_current, volume_total, started_on, finished_on, rating, review_title, review_body, verdict, has_spoilers, created_at, updated_at";
+  "id, title, original_title, media_type, year, status, progress_current, progress_total, progress_unit, consumption_format, volume_current, volume_total, started_on, finished_on, rating, review_title, review_body, verdict, has_spoilers, cover_image_id, created_at, updated_at";

@@ -79,53 +79,75 @@ function EntryViewContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div
-        className={`relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br p-6 shadow-2xl shadow-black/40 md:p-8 ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
-      >
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2 text-[11px] font-medium tracking-wide uppercase">
-              <span className="bg-background/70 rounded-full px-2.5 py-1 backdrop-blur">
-                {MEDIA_TYPE_LABELS[entry.media_type]}
-              </span>
-              <span className="bg-background/70 rounded-full px-2.5 py-1 backdrop-blur">
-                {STATUS_LABELS[entry.status]}
-              </span>
-              <span className="bg-background/70 rounded-full px-2.5 py-1 backdrop-blur">
-                {CONSUMPTION_FORMAT_LABELS[format]}
-              </span>
-              {entry.year ? (
-                <span className="bg-background/70 rounded-full px-2.5 py-1 backdrop-blur">
-                  {entry.year}
+      <div className="border-border/80 overflow-hidden rounded-3xl border bg-card/40 shadow-2xl shadow-black/40">
+        <div className="grid gap-0 md:grid-cols-[220px_1fr]">
+          <div
+            className={`relative aspect-[2/3] md:aspect-auto md:min-h-[320px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+          >
+            {entry.cover_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={entry.cover_url}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
+                <p className="text-sm font-medium text-white/90">No cover yet</p>
+                <Link
+                  href={`/entries/edit/?id=${entry.id}`}
+                  className="bg-background/80 hover:bg-background rounded-lg px-3 py-1.5 text-xs font-medium backdrop-blur"
+                >
+                  Upload cover
+                </Link>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col justify-between gap-6 p-6 md:p-8">
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2 text-[11px] font-medium tracking-wide uppercase">
+                <span className="bg-muted rounded-full px-2.5 py-1">
+                  {MEDIA_TYPE_LABELS[entry.media_type]}
                 </span>
+                <span className="bg-muted rounded-full px-2.5 py-1">
+                  {STATUS_LABELS[entry.status]}
+                </span>
+                <span className="bg-muted rounded-full px-2.5 py-1">
+                  {CONSUMPTION_FORMAT_LABELS[format]}
+                </span>
+                {entry.year ? (
+                  <span className="bg-muted rounded-full px-2.5 py-1">
+                    {entry.year}
+                  </span>
+                ) : null}
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+                {entry.title}
+              </h1>
+              {entry.original_title ? (
+                <p className="text-muted-foreground text-sm">
+                  {entry.original_title}
+                </p>
               ) : null}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-              {entry.title}
-            </h1>
-            {entry.original_title ? (
-              <p className="text-muted-foreground text-sm">
-                {entry.original_title}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex flex-col items-start gap-3 md:items-end">
-            <div className="rounded-2xl bg-amber-400 px-5 py-3 text-center shadow-lg shadow-amber-900/30">
-              <p className="text-[10px] font-bold tracking-widest text-amber-950 uppercase">
-                Score
-              </p>
-              <p className="text-3xl font-black text-amber-950 tabular-nums">
-                {entry.rating != null ? entry.rating : "—"}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href={`/entries/edit/?id=${entry.id}`}
-                className="border-border bg-background/60 hover:bg-background/80 inline-flex h-9 items-center rounded-lg border px-3 text-sm font-medium backdrop-blur"
-              >
-                Edit
-              </Link>
-              <DeleteEntryButton entryId={entry.id} />
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="rounded-2xl bg-amber-400 px-5 py-3 text-center shadow-lg shadow-amber-900/30">
+                <p className="text-[10px] font-bold tracking-widest text-amber-950 uppercase">
+                  Score
+                </p>
+                <p className="text-3xl font-black text-amber-950 tabular-nums">
+                  {entry.rating != null ? entry.rating : "—"}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/entries/edit/?id=${entry.id}`}
+                  className="border-border hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-sm font-medium"
+                >
+                  Edit
+                </Link>
+                <DeleteEntryButton entryId={entry.id} />
+              </div>
             </div>
           </div>
         </div>

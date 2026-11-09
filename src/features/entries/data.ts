@@ -1,4 +1,9 @@
 import {
+  fetchCoverPathsForEntries,
+  signCoverUrl,
+  signCoverUrls,
+} from "@/features/entries/cover-image";
+import {
   ENTRY_SELECT,
   activeStatusFor,
   defaultProgressUnit,
@@ -33,7 +38,9 @@ async function requireUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
-function normalizeEntry(row: MediaEntry): MediaEntry {
+function normalizeEntry(
+  row: MediaEntry & { cover_image_id?: string | null },
+): MediaEntry {
   return {
     ...row,
     progress_unit: row.progress_unit ?? null,
@@ -42,7 +49,24 @@ function normalizeEntry(row: MediaEntry): MediaEntry {
     volume_total: row.volume_total ?? null,
     started_on: row.started_on ?? null,
     finished_on: row.finished_on ?? null,
+    cover_image_id: row.cover_image_id ?? null,
+    cover_path: row.cover_path ?? null,
+    cover_url: row.cover_url ?? null,
   };
+}
+
+async function attachCovers(entries: MediaEntry[]): Promise<MediaEntry[]> {
+  if (entries.length === 0) return entries;
+  const pathById = await fetchCoverPathsForEntries(entries.map((e) => e.id));
+  const urls = await signCoverUrls(Object.values(pathById));
+  return entries.map((e) => {
+    const path = pathById[e.id] ?? null;
+    return {
+      ...e,
+      cover_path: path,
+      cover_url: path ? (urls[path] ?? null) : null,
+    };
+  });
 }
 
 function toRow(values: EntryFormValues, userId: string) {
@@ -200,7 +224,10 @@ export async function getEntry(id: string): Promise<MediaEntry | null> {
     .maybeSingle();
 
   if (error || !data) return null;
-  return normalizeEntry(data as MediaEntry);
+  const [withCover] = await attachCovers([
+    normalizeEntry(data as MediaEntry),
+  ]);
+  return withCover;
 }
 
 export async function getEntryTags(entryId: string): Promise<string[]> {
@@ -261,7 +288,7 @@ export async function listEntries(
 
   const { data, error } = await query.limit(200);
   if (error || !data) return [];
-  return (data as MediaEntry[]).map(normalizeEntry);
+  return attachCovers((data as MediaEntry[]).map(normalizeEntry));
 }
 
 export async function countEntries(): Promise<number | null> {
@@ -336,8 +363,21 @@ export async function bumpProgress(
     return { ok: false, error: "Could not update progress." };
   }
 
+  const entry = normalizeEntry(data as MediaEntry);
+  if (current.cover_path) {
+    entry.cover_path = current.cover_path;
+    entry.cover_url =
+      current.cover_url ?? (await signCoverUrl(current.cover_path));
+  }
   return {
     ok: true,
-    data: { entry: normalizeEntry(data as MediaEntry), justCompleted },
+    data: { entry, justCompleted },
   };
 }
+
+export {
+  removeEntryCover,
+  setEntryCover,
+  validateCoverFile,
+} from "@/features/entries/cover-image";
+

@@ -29,7 +29,7 @@ export function ContinueRail({
           </p>
         </div>
         <Link
-          href="/library/?status=watching"
+          href="/library/"
           className="text-primary text-xs font-medium hover:underline"
         >
           View all
@@ -43,14 +43,25 @@ export function ContinueRail({
           >
             <Link
               href={`/entries/view/?id=${entry.id}`}
-              className={`block bg-gradient-to-br px-4 pt-4 pb-3 ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+              className={`relative block aspect-[16/10] overflow-hidden bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
             >
-              <p className="text-[10px] font-medium tracking-wide uppercase opacity-80">
-                {MEDIA_TYPE_LABELS[entry.media_type]}
-              </p>
-              <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug">
-                {entry.title}
-              </h3>
+              {entry.cover_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={entry.cover_url}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : null}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-3">
+                <p className="text-[10px] font-medium tracking-wide text-white/80 uppercase">
+                  {MEDIA_TYPE_LABELS[entry.media_type]}
+                </p>
+                <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-white">
+                  {entry.title}
+                </h3>
+              </div>
             </Link>
             <div className="p-3">
               <ProgressControls

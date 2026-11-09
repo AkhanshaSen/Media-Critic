@@ -83,7 +83,7 @@ export default function DashboardPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border-white/10 bg-card/60 shadow-lg shadow-black/20">
+        <Card className="border-primary/20 bg-card/60 shadow-lg shadow-black/20 ring-1 ring-primary/10">
           <CardHeader>
             <CardTitle>On shelf</CardTitle>
             <CardDescription>All titles</CardDescription>
@@ -143,7 +143,8 @@ export default function DashboardPage() {
         ) : recent.length === 0 ? (
           <div className="border-border rounded-2xl border border-dashed p-10 text-center">
             <p className="text-muted-foreground text-sm">
-              Nothing here yet. Add your first title and tap +1 as you go.
+              Nothing here yet. Add a title with a cover poster, then tap +1 as
+              you go.
             </p>
             <Link
               href="/add/"
