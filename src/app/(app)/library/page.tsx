@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -57,7 +56,11 @@ export default function LibraryPage() {
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <PageHeader
         title="Library"
-        description={`${entries.length} title${entries.length === 1 ? "" : "s"}`}
+        description={`Search and filter your shelf · ${entries.length} title${entries.length === 1 ? "" : "s"}`}
+        breadcrumb={[
+          { label: "Shelf", href: "/dashboard/" },
+          { label: "Library" },
+        ]}
         action={
           <Link
             href="/add/"
@@ -75,6 +78,9 @@ export default function LibraryPage() {
           void load();
         }}
       >
+        <p className="text-muted-foreground sm:col-span-2 lg:col-span-4 text-xs">
+          Filters apply automatically as you change them.
+        </p>
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -141,28 +147,36 @@ export default function LibraryPage() {
           </SelectContent>
         </Select>
 
-        <Button
-          type="submit"
-          className="bg-amber-400 font-semibold text-amber-950 hover:bg-amber-300 sm:col-span-2 sm:w-fit lg:col-span-4"
-        >
-          Apply filters
-        </Button>
       </form>
 
       {loading ? (
         <p className="text-muted-foreground text-sm">Loading…</p>
       ) : entries.length === 0 ? (
         <div className="border-border rounded-2xl border border-dashed p-10 text-center">
-          <p className="text-lg font-semibold tracking-tight">Start your shelf</p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            No titles match. Add one or clear filters.
+          <p className="text-lg font-semibold tracking-tight">
+            {q || type || status
+              ? "No titles match these filters"
+              : "Your shelf is empty"}
           </p>
-          <Link
-            href="/add/"
-            className="bg-amber-400 mt-4 inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold text-amber-950 hover:bg-amber-300"
-          >
-            Add title
-          </Link>
+          <p className="text-muted-foreground mt-2 text-sm">
+            {q || type || status
+              ? "Clear filters or add a new title."
+              : "Add your first title to start reviewing."}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/add/"
+              className="bg-amber-400 inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold text-amber-950 hover:bg-amber-300"
+            >
+              Add your first title
+            </Link>
+            <Link
+              href="/dashboard/"
+              className="border-border hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-sm font-medium"
+            >
+              Back to shelf
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

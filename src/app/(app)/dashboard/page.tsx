@@ -123,12 +123,20 @@ export default function DashboardPage() {
                       {formatProgress(featured)}
                     </span>
                   </div>
-                  <Link
-                    href={`/entries/view/?id=${featured.id}`}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold shadow-lg shadow-amber-900/30"
-                  >
-                    Open entry
-                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/entries/view/?id=${featured.id}`}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold shadow-lg shadow-amber-900/30"
+                    >
+                      Open entry
+                    </Link>
+                    <Link
+                      href="/add/"
+                      className="border-white/20 bg-white/10 hover:bg-white/15 inline-flex h-10 items-center rounded-lg border px-4 text-sm font-medium text-white backdrop-blur"
+                    >
+                      Add title
+                    </Link>
+                  </div>
                 </>
               ) : (
                 <>
@@ -149,19 +157,13 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-          <Link
-            href="/add/"
-            className="border-white/20 bg-white/10 hover:bg-white/15 inline-flex h-10 shrink-0 items-center self-start rounded-lg border px-4 text-sm font-medium text-white backdrop-blur md:self-end"
-          >
-            Add title
-          </Link>
         </div>
       </section>
 
       {/* Compact stat strip */}
       <div className="flex flex-wrap gap-3">
         <div className="bg-card/50 border-border/60 flex items-baseline gap-2 rounded-full border px-4 py-2 text-sm shadow-md shadow-black/20">
-          <span className="text-muted-foreground">On shelf</span>
+          <span className="text-muted-foreground">On your shelf</span>
           <span className="text-lg font-semibold tabular-nums">
             {error ? "—" : loading ? "…" : (count ?? 0)}
           </span>
@@ -187,15 +189,15 @@ export default function DashboardPage() {
       ) : null}
 
       <section className="space-y-4">
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between gap-3">
           <h2 className="border-l-2 border-amber-400 pl-3 text-xl font-bold tracking-tight">
             Recently updated
           </h2>
           <Link
             href="/library/"
-            className="text-primary text-xs font-medium hover:underline"
+            className="text-primary shrink-0 text-xs font-medium hover:underline"
           >
-            Browse library
+            See all
           </Link>
         </div>
         {loading ? (

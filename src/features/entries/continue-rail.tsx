@@ -23,7 +23,9 @@ export function ContinueRail({
     <section className="space-y-4">
       <div className="flex items-end justify-between gap-3">
         <div className="border-l-2 border-amber-400 pl-3">
-          <h2 className="text-xl font-bold tracking-tight">Continue</h2>
+          <h2 className="text-xl font-bold tracking-tight">
+            Continue watching / reading
+          </h2>
           <p className="text-muted-foreground text-sm">
             One tap +1 — keep the streak going
           </p>
@@ -32,7 +34,7 @@ export function ContinueRail({
           href="/library/"
           className="text-primary text-xs font-medium hover:underline"
         >
-          View all
+          See all
         </Link>
       </div>
       <div className="flex gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

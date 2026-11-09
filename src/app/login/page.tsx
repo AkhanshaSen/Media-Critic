@@ -47,8 +47,8 @@ function LoginContent() {
         <CardHeader className="space-y-2">
           <CardTitle className="text-2xl tracking-tight">Media Critic</CardTitle>
           <CardDescription>
-            Sign in with Google or email to manage your private shelf of ratings
-            and reviews. Each account only sees its own entries.
+            Sign in to your private shelf and reviews. Each account only sees its
+            own titles.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
