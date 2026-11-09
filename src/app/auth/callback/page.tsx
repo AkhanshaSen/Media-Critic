@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/client";
+import { appPath } from "@/lib/site";
 
 export default function AuthCallbackPage() {
   return (
@@ -22,8 +23,8 @@ export default function AuthCallbackPage() {
 
 function goTo(path: string) {
   // Hard navigation avoids Next.js "Router action dispatched before initialization"
-  // after OAuth redirects / HMR in local dev.
-  window.location.assign(path);
+  // after OAuth redirects / HMR in local dev. Prefix basePath for GitHub Pages.
+  window.location.assign(appPath(path));
 }
 
 function CallbackContent() {
@@ -148,7 +149,7 @@ function CallbackContent() {
         {message}
       </p>
       {status === "error" ? (
-        <a href="/login/" className="text-primary text-sm underline">
+        <a href={appPath("/login/")} className="text-primary text-sm underline">
           Back to login
         </a>
       ) : null}
