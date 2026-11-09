@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { EmailLoginForm } from "@/components/auth/email-login-form";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -46,23 +47,36 @@ function LoginContent() {
         <CardHeader className="space-y-2">
           <CardTitle className="text-2xl tracking-tight">Media Critic</CardTitle>
           <CardDescription>
-            Sign in with Google to manage your private shelf of ratings and
-            reviews.
+            Sign in with Google or email to manage your private shelf of ratings
+            and reviews. Each account only sees its own entries.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-6">
           {authError ? (
             <p className="text-destructive text-sm">
-              Sign-in did not complete (expired link, cancelled Google prompt, or
-              missing OAuth code). Use{" "}
-              <code className="text-xs">http://localhost:3000</code> (not
-              127.0.0.1) and try Continue with Google again.
+              Sign-in did not complete (expired link, cancelled prompt, or
+              missing auth code). Prefer{" "}
+              <code className="text-xs">http://localhost:3000</code> locally (not
+              127.0.0.1) and try again.
             </p>
           ) : null}
           {loading ? (
             <p className="text-muted-foreground text-sm">Checking session…</p>
           ) : (
-            <GoogleLoginButton nextPath={next} />
+            <>
+              <GoogleLoginButton nextPath={next} />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card text-muted-foreground px-2">
+                    or email
+                  </span>
+                </div>
+              </div>
+              <EmailLoginForm nextPath={next} />
+            </>
           )}
         </CardContent>
       </Card>

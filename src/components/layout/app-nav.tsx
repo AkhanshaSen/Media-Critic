@@ -23,12 +23,18 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border hidden w-56 shrink-0 border-r md:flex md:flex-col">
-      <div className="border-sidebar-border from-primary/10 border-b bg-gradient-to-b to-transparent px-5 py-6">
-        <Link href="/dashboard/" className="text-lg font-semibold tracking-tight">
+    <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border hidden w-60 shrink-0 border-r md:flex md:flex-col">
+      <div className="border-sidebar-border relative overflow-hidden border-b px-5 py-7">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-500/25 via-violet-600/10 to-transparent" />
+        <Link
+          href="/dashboard/"
+          className="relative text-xl font-bold tracking-tight"
+        >
           Media Critic
         </Link>
-        <p className="text-muted-foreground mt-1 text-xs">Your private shelf</p>
+        <p className="text-muted-foreground relative mt-1 text-xs">
+          Your private shelf
+        </p>
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
         {navItems.map((item) => {
@@ -38,7 +44,7 @@ export function AppSidebar() {
             return (
               <span
                 key={item.href}
-                className="text-muted-foreground cursor-not-allowed rounded-md px-3 py-2 text-sm"
+                className="text-muted-foreground cursor-not-allowed rounded-xl px-3 py-2.5 text-sm"
                 title="Coming later"
               >
                 {item.label}
@@ -54,9 +60,9 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-md px-3 py-2 text-sm transition-colors",
+                "rounded-xl px-3 py-2.5 text-sm transition-colors",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  ? "bg-sky-500/20 text-sky-100 font-semibold shadow-inner ring-1 ring-sky-400/30"
                   : "hover:bg-sidebar-accent/70",
               )}
             >
@@ -97,7 +103,9 @@ export function MobileTabBar() {
             href={item.href}
             className={cn(
               "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px]",
-              isActive ? "text-foreground font-medium" : "text-muted-foreground",
+              isActive
+                ? "text-sky-200 font-semibold"
+                : "text-muted-foreground",
             )}
           >
             {item.label}

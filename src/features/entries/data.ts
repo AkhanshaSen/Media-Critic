@@ -1,6 +1,10 @@
 import {
+  ENTRY_SELECT,
+  activeStatusFor,
+  defaultProgressUnit,
   entryFormSchema,
   parseTagsText,
+  todayIsoDate,
   type EntryFormValues,
   type MediaEntry,
 } from "@/features/entries/schema";
@@ -29,7 +33,20 @@ async function requireUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
+function normalizeEntry(row: MediaEntry): MediaEntry {
+  return {
+    ...row,
+    progress_unit: row.progress_unit ?? null,
+    consumption_format: row.consumption_format ?? "digital",
+    volume_current: row.volume_current ?? null,
+    volume_total: row.volume_total ?? null,
+    started_on: row.started_on ?? null,
+    finished_on: row.finished_on ?? null,
+  };
+}
+
 function toRow(values: EntryFormValues, userId: string) {
+  const unit = values.progress_unit ?? defaultProgressUnit(values.media_type);
   return {
     title: values.title,
     original_title: values.original_title,
@@ -38,6 +55,12 @@ function toRow(values: EntryFormValues, userId: string) {
     status: values.status,
     progress_current: values.progress_current,
     progress_total: values.progress_total,
+    progress_unit: unit,
+    consumption_format: values.consumption_format,
+    volume_current: values.volume_current,
+    volume_total: values.volume_total,
+    started_on: values.started_on,
+    finished_on: values.finished_on,
     rating: values.rating,
     review_title: values.review_title,
     review_body: values.review_body,
@@ -172,14 +195,12 @@ export async function getEntry(id: string): Promise<MediaEntry | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("media_entries")
-    .select(
-      "id, title, original_title, media_type, year, status, progress_current, progress_total, rating, review_title, review_body, verdict, has_spoilers, created_at, updated_at",
-    )
+    .select(ENTRY_SELECT)
     .eq("id", id)
     .maybeSingle();
 
   if (error || !data) return null;
-  return data as MediaEntry;
+  return normalizeEntry(data as MediaEntry);
 }
 
 export async function getEntryTags(entryId: string): Promise<string[]> {
@@ -212,11 +233,7 @@ export async function listEntries(
   filters: ListFilters = {},
 ): Promise<MediaEntry[]> {
   const supabase = createClient();
-  let query = supabase
-    .from("media_entries")
-    .select(
-      "id, title, original_title, media_type, year, status, progress_current, progress_total, rating, review_title, review_body, verdict, has_spoilers, created_at, updated_at",
-    );
+  let query = supabase.from("media_entries").select(ENTRY_SELECT);
 
   if (filters.media_type) {
     query = query.eq("media_type", filters.media_type);
@@ -244,7 +261,7 @@ export async function listEntries(
 
   const { data, error } = await query.limit(200);
   if (error || !data) return [];
-  return data as MediaEntry[];
+  return (data as MediaEntry[]).map(normalizeEntry);
 }
 
 export async function countEntries(): Promise<number | null> {
@@ -254,4 +271,73 @@ export async function countEntries(): Promise<number | null> {
     .select("*", { count: "exact", head: true });
   if (error) return null;
   return count;
+}
+
+/** Increment or decrement progress with auto start/complete side effects. */
+export async function bumpProgress(
+  entryId: string,
+  delta = 1,
+): Promise<DataResult<{ entry: MediaEntry; justCompleted: boolean }>> {
+  if (!isUuid(entryId)) return { ok: false, error: "Invalid entry." };
+
+  const userId = await requireUserId();
+  if (!userId) return { ok: false, error: "Sign in required." };
+
+  const current = await getEntry(entryId);
+  if (!current) return { ok: false, error: "Entry not found." };
+
+  let next = Math.max(0, current.progress_current + delta);
+  if (current.progress_total != null) {
+    next = Math.min(next, current.progress_total);
+  }
+
+  const patch: Record<string, unknown> = {
+    progress_current: next,
+  };
+
+  if (!current.started_on && next > 0) {
+    patch.started_on = todayIsoDate();
+  }
+
+  if (
+    current.status === "plan_to_watch" ||
+    current.status === "plan_to_read" ||
+    current.status === "on_hold"
+  ) {
+    if (next > 0) {
+      patch.status = activeStatusFor(current.media_type);
+    }
+  }
+
+  let justCompleted = false;
+  if (
+    current.progress_total != null &&
+    next >= current.progress_total &&
+    current.progress_total > 0
+  ) {
+    patch.status = "completed";
+    patch.finished_on = current.finished_on ?? todayIsoDate();
+    justCompleted = current.status !== "completed";
+  } else if (current.status === "completed" && delta < 0) {
+    patch.status = activeStatusFor(current.media_type);
+    patch.finished_on = null;
+  }
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("media_entries")
+    .update(patch)
+    .eq("id", entryId)
+    .eq("user_id", userId)
+    .select(ENTRY_SELECT)
+    .single();
+
+  if (error || !data) {
+    return { ok: false, error: "Could not update progress." };
+  }
+
+  return {
+    ok: true,
+    data: { entry: normalizeEntry(data as MediaEntry), justCompleted },
+  };
 }

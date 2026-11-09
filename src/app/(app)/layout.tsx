@@ -24,7 +24,7 @@ export default function AppLayout({
         </Suspense>
         <div className="flex min-w-0 flex-1 flex-col">
           <AppHeader />
-          <div className="flex-1 px-4 py-6 md:px-8">{children}</div>
+          <div className="flex-1 px-4 py-6 pb-20 md:px-8 md:pb-8">{children}</div>
           <Suspense fallback={<div className="h-12 border-t md:hidden" />}>
             <MobileTabBar />
           </Suspense>
@@ -38,10 +38,17 @@ function AppHeader() {
   const { user } = useAuth();
 
   return (
-    <header className="border-border from-background/80 to-background sticky top-0 z-10 flex items-center justify-between border-b bg-gradient-to-r px-4 py-3 backdrop-blur md:px-8">
-      <p className="text-muted-foreground truncate text-sm">
-        {user?.email ?? "Signed in"}
-      </p>
+    <header className="border-border sticky top-0 z-10 flex items-center justify-between border-b bg-background/70 px-4 py-3 backdrop-blur-md md:px-8">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">
+          {user?.user_metadata?.full_name ||
+            user?.user_metadata?.name ||
+            "Signed in"}
+        </p>
+        <p className="text-muted-foreground truncate text-xs">
+          {user?.email ?? ""}
+        </p>
+      </div>
       <SignOutButton />
     </header>
   );

@@ -1,17 +1,17 @@
 # Media Critic
 
-Personal anime, movie, and manga tracker (ratings + reviews) for a **single Google-signed-in user**, deployable to **GitHub Pages**.
+Anime, movie, and manga tracker (ratings + reviews) with **open Google or email sign-in**. Each authenticated user has a private shelf (RLS). Deployable to **GitHub Pages**.
 
 ## Stack
 
 - Next.js static export (`output: 'export'`)
-- Supabase Auth (Google) + Postgres RLS
+- Supabase Auth (**Google** + **email magic link**) + Postgres RLS
 - Zod validation in the browser
 - Tailwind + shadcn/ui
 
-## Why Google auth (even if “only me”)
+## Why auth on a public URL
 
-On a public GitHub Pages URL, **no auth + open RLS is unsafe**. Google sign-in + `user_id = auth.uid()` keeps strangers from editing your shelf. SQL injection risk stays low via the Supabase client + Zod (see [`SECURITY.md`](SECURITY.md)).
+On a public GitHub Pages URL, **no auth + open RLS is unsafe**. Sign-in + `user_id = auth.uid()` keeps each person’s reviews private from other accounts. SQL injection risk stays low via the Supabase client + Zod (see [`SECURITY.md`](SECURITY.md)).
 
 ## Local setup
 
@@ -31,27 +31,29 @@ NEXT_PUBLIC_BASE_PATH=
 ### SQL (in order)
 
 1. [`supabase/migrations/20261109000000_init.sql`](supabase/migrations/20261109000000_init.sql)
-2. [`supabase/migrations/20261109000002_restore_auth_rls.sql`](supabase/migrations/20261109000002_restore_auth_rls.sql) — **required** for Google auth (replaces anonymous open policies)
+2. [`supabase/migrations/20261109000002_restore_auth_rls.sql`](supabase/migrations/20261109000002_restore_auth_rls.sql) — **required** (owner RLS; replaces anonymous open policies)
+3. [`supabase/migrations/20261109000003_ensure_user_profile.sql`](supabase/migrations/20261109000003_ensure_user_profile.sql) — **required** (backfill `public.users` / `user_settings`, `ensure_user_profile` RPC)
+4. [`supabase/migrations/20261109000004_progress_format.sql`](supabase/migrations/20261109000004_progress_format.sql) — progress unit, digital/physical format, volume fields
 
-If you previously ran `00001_anonymous_shelf.sql`, still run `00002` before public deploy.
+If you previously ran `00001_anonymous_shelf.sql`, still run `00002` then `00003` (and `00004`) before public deploy.
 
-### Auth redirects (local)
+Profiles are created by a trigger on **new** `auth.users` rows and by the app calling `ensure_user_profile` after sign-in. If Auth shows a user but Table Editor → `public.users` does not, run migration `00003`.
 
-1. **Enable Google** in [Auth → Providers](https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/auth/providers)  
-   (if you see `Unsupported provider: provider is not enabled`, this step was skipped).
-2. Create a Google Cloud **Web** OAuth client; set **Authorized redirect URI** to  
+### Auth (local)
+
+1. Enable **Google** and **Email** in [Auth → Providers](https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/auth/providers).
+2. Google Cloud **Web** OAuth client → Authorized redirect URI  
    `https://kaiffjdbfjkjqisumklh.supabase.co/auth/v1/callback`  
-   Paste Client ID + Secret into Supabase Google provider → **Save**.  
-   If consent screen is **Testing**, add yourself as a test user.
+   Paste Client ID + Secret into Supabase Google provider → **Save**.
 3. In [Auth → URL configuration](https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/auth/url-configuration):
    - Site URL: `http://localhost:3000`
-   - Redirect: `http://localhost:3000/auth/callback/`
+   - Redirects: `http://localhost:3000/auth/callback/` (and `/**` variants as needed)
 
 ```bash
 npm run dev
 ```
 
-Open **http://localhost:3000** (prefer `localhost` over `127.0.0.1`) → Continue with Google.
+Open **http://localhost:3000** (prefer `localhost` over `127.0.0.1`) → Google or magic link.
 
 ## GitHub Pages deploy
 
@@ -89,7 +91,7 @@ npm run security:check
 
 ## App routes
 
-- `/login/` — Google sign-in
+- `/login/` — Google + email magic link
 - `/dashboard/` — home + recent
 - `/library/` — filter / search
 - `/add/` — create

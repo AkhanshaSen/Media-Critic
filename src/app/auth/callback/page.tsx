@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/client";
+import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import { appPath } from "@/lib/site";
 
 export default function AuthCallbackPage() {
@@ -41,8 +42,6 @@ function CallbackContent() {
     let active = true;
 
     if (error) {
-      setStatus("error");
-      setMessage("Sign-in was cancelled or failed. Redirecting to login…");
       goTo("/login/?error=auth");
       return;
     }
@@ -53,6 +52,8 @@ function CallbackContent() {
       if (sessionStorage.getItem(exchangeKey) === "1") {
         const { data } = await supabase.auth.getSession();
         if (data.session) {
+          await ensureUserProfile(supabase);
+          if (!active) return;
           goTo(next);
           return;
         }
@@ -78,6 +79,8 @@ function CallbackContent() {
       }
 
       sessionStorage.setItem(exchangeKey, "1");
+      await ensureUserProfile(supabase);
+      if (!active) return;
       goTo(next);
     }
 
@@ -86,6 +89,8 @@ function CallbackContent() {
       if (!active) return;
 
       if (data.session) {
+        await ensureUserProfile(supabase);
+        if (!active) return;
         goTo(next);
         return;
       }
@@ -105,8 +110,11 @@ function CallbackContent() {
             if (!session) return;
             window.clearTimeout(timer);
             subscription.unsubscribe();
-            goTo(next);
-            resolve();
+            void (async () => {
+              await ensureUserProfile(supabase);
+              goTo(next);
+              resolve();
+            })();
           },
         );
       });
@@ -115,6 +123,8 @@ function CallbackContent() {
 
       const again = await supabase.auth.getSession();
       if (again.data.session) {
+        await ensureUserProfile(supabase);
+        if (!active) return;
         goTo(next);
         return;
       }
