@@ -88,6 +88,12 @@ function fieldClass(invalid?: boolean) {
   );
 }
 
+function viewHref(id: string, justAdded: boolean) {
+  return justAdded
+    ? `/entries/view/?id=${id}&added=1`
+    : `/entries/view/?id=${id}`;
+}
+
 export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -221,7 +227,7 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
           setError(
             `Saved, but poster upload failed: ${coverResult.error}. You can retry from Edit.`,
           );
-          router.push(`/entries/view/?id=${id}`);
+          router.push(viewHref(id, mode === "create"));
           return;
         }
       }
@@ -232,7 +238,7 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
           setError(
             `Saved, but backdrop upload failed: ${backdropResult.error}. You can retry from Edit.`,
           );
-          router.push(`/entries/view/?id=${id}`);
+          router.push(viewHref(id, mode === "create"));
           return;
         }
       }
@@ -243,13 +249,21 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
           setError(
             `Saved, but some stills failed: ${stillsResult.error}. You can retry from Edit.`,
           );
-          router.push(`/entries/view/?id=${id}`);
+          router.push(viewHref(id, mode === "create"));
           return;
         }
       }
 
-      router.push(`/entries/view/?id=${id}`);
+      router.push(viewHref(id!, mode === "create"));
     });
+  }
+
+  function cancel() {
+    if (mode === "edit" && entryId) {
+      router.push(`/entries/view/?id=${entryId}`);
+      return;
+    }
+    router.push("/library/");
   }
 
   return (
@@ -267,7 +281,32 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
         </div>
       ) : null}
 
-      <section className="border-border space-y-6 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10">
+      <nav
+        aria-label="Form sections"
+        className="border-border/80 bg-card/50 sticky top-14 z-20 flex flex-wrap gap-1 rounded-xl border p-1 shadow-md shadow-black/20 backdrop-blur-md"
+      >
+        {(
+          [
+            ["form-images", "Images"],
+            ["form-basics", "Basics"],
+            ["form-progress", "Progress"],
+            ["form-review", "Review"],
+          ] as const
+        ).map(([href, label]) => (
+          <a
+            key={href}
+            href={`#${href}`}
+            className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      <section
+        id="form-images"
+        className="border-border scroll-mt-28 space-y-6 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+      >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Images
         </h2>
@@ -346,7 +385,10 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
         />
       </section>
 
-      <section className="border-border space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10">
+      <section
+        id="form-basics"
+        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+      >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Basics
         </h2>
@@ -466,7 +508,10 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
         </div>
       </section>
 
-      <section className="border-border space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10">
+      <section
+        id="form-progress"
+        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+      >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Progress
         </h2>
@@ -604,7 +649,10 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
         </div>
       </section>
 
-      <section className="border-border space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10">
+      <section
+        id="form-review"
+        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+      >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Review
         </h2>
@@ -677,9 +725,9 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
           type="button"
           variant="outline"
           disabled={pending}
-          onClick={() => router.back()}
+          onClick={cancel}
         >
-          Cancel
+          {mode === "edit" ? "Back to entry" : "Cancel"}
         </Button>
         {errorCount > 0 ? (
           <span className="text-destructive text-xs">

@@ -77,7 +77,24 @@ function EditContent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Edit entry" description={entry.title} />
+      <PageHeader
+        title="Edit entry"
+        description={entry.title}
+        breadcrumb={[
+          { label: "Shelf", href: "/dashboard/" },
+          { label: "Library", href: "/library/" },
+          { label: entry.title, href: `/entries/view/?id=${entry.id}` },
+          { label: "Edit" },
+        ]}
+        action={
+          <Link
+            href={`/entries/view/?id=${entry.id}`}
+            className="border-border hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-sm font-medium"
+          >
+            View entry
+          </Link>
+        }
+      />
       <EntryForm
         mode="edit"
         entryId={entry.id}
