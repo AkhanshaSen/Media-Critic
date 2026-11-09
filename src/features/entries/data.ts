@@ -291,12 +291,14 @@ export async function getShelfAverageRating(): Promise<number | null> {
 
   if (error || !data?.length) return null;
 
-  const values = data
+  const rows = data as { rating: number | null }[];
+  const values = rows
     .map((row) => row.rating)
     .filter((n): n is number => typeof n === "number" && !Number.isNaN(n));
   if (!values.length) return null;
 
-  const avg = values.reduce((sum, n) => sum + n, 0) / values.length;
+  const avg =
+    values.reduce((sum: number, n: number) => sum + n, 0) / values.length;
   return Math.round(avg * 10) / 10;
 }
 
