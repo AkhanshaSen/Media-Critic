@@ -79,20 +79,31 @@ function EntryViewContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="border-border/80 overflow-hidden rounded-3xl border bg-card/40 shadow-2xl shadow-black/40">
-        <div className="grid gap-0 md:grid-cols-[220px_1fr]">
-          <div
-            className={`relative aspect-[2/3] md:aspect-auto md:min-h-[320px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
-          >
+      {/* Cinematic hero */}
+      <section
+        className={`relative min-h-[340px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/50 md:min-h-[400px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+      >
+        {entry.cover_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={entry.cover_url}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-3xl"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/20" />
+
+        <div className="relative z-10 flex h-full min-h-[340px] flex-col justify-end gap-6 p-6 pb-8 md:min-h-[400px] md:flex-row md:items-end md:gap-8 md:p-10">
+          <div className="shrink-0">
             {entry.cover_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={entry.cover_url}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                className="w-28 rounded-2xl object-cover shadow-2xl shadow-black/60 ring-1 ring-white/15 md:w-44"
               />
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
+              <div className="bg-card/60 flex w-28 flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 p-4 text-center shadow-2xl md:w-44 md:min-h-[260px]">
                 <p className="text-sm font-medium text-white/90">No cover yet</p>
                 <Link
                   href={`/entries/edit/?id=${entry.id}`}
@@ -103,35 +114,35 @@ function EntryViewContent() {
               </div>
             )}
           </div>
-          <div className="flex flex-col justify-between gap-6 p-6 md:p-8">
+
+          <div className="flex min-w-0 flex-1 flex-col justify-between gap-6">
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 text-[11px] font-medium tracking-wide uppercase">
-                <span className="bg-muted rounded-full px-2.5 py-1">
+                <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
                   {MEDIA_TYPE_LABELS[entry.media_type]}
                 </span>
-                <span className="bg-muted rounded-full px-2.5 py-1">
+                <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
                   {STATUS_LABELS[entry.status]}
                 </span>
-                <span className="bg-muted rounded-full px-2.5 py-1">
+                <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
                   {CONSUMPTION_FORMAT_LABELS[format]}
                 </span>
                 {entry.year ? (
-                  <span className="bg-muted rounded-full px-2.5 py-1">
+                  <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
                     {entry.year}
                   </span>
                 ) : null}
               </div>
-              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+              <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
                 {entry.title}
               </h1>
               {entry.original_title ? (
-                <p className="text-muted-foreground text-sm">
-                  {entry.original_title}
-                </p>
+                <p className="text-sm text-white/65">{entry.original_title}</p>
               ) : null}
             </div>
+
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="rounded-2xl bg-amber-400 px-5 py-3 text-center shadow-lg shadow-amber-900/30">
+              <div className="rounded-2xl bg-amber-400 px-5 py-3 text-center shadow-lg shadow-amber-900/40">
                 <p className="text-[10px] font-bold tracking-widest text-amber-950 uppercase">
                   Score
                 </p>
@@ -142,7 +153,7 @@ function EntryViewContent() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/entries/edit/?id=${entry.id}`}
-                  className="border-border hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-sm font-medium"
+                  className="inline-flex h-9 items-center rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-medium text-white backdrop-blur hover:bg-white/15"
                 >
                   Edit
                 </Link>
@@ -151,10 +162,21 @@ function EntryViewContent() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
+          {entry.synopsis ? (
+            <Card className="border-white/10 bg-card/60">
+              <CardHeader>
+                <CardTitle className="text-base">Synopsis</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
+                {entry.synopsis}
+              </CardContent>
+            </Card>
+          ) : null}
+
           {entry.verdict ? (
             <Card className="border-white/10 bg-card/60">
               <CardHeader>
@@ -167,7 +189,7 @@ function EntryViewContent() {
           <Card className="border-white/10 bg-card/60">
             <CardHeader>
               <CardTitle className="text-base">
-                {entry.review_title || "Review"}
+                {entry.review_title || "What I thought"}
               </CardTitle>
               {entry.has_spoilers ? (
                 <CardDescription className="text-amber-200/90">
@@ -175,21 +197,26 @@ function EntryViewContent() {
                 </CardDescription>
               ) : null}
             </CardHeader>
-            <CardContent className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed">
+            <CardContent className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
               {entry.review_body || "No review yet — add one from Edit."}
             </CardContent>
           </Card>
 
           {tags.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="bg-muted rounded-full px-2.5 py-1 text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                Associated tags
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs text-amber-200"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           ) : null}
         </div>

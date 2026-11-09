@@ -131,6 +131,7 @@ export type MediaEntry = {
   started_on: string | null;
   finished_on: string | null;
   rating: number | null;
+  synopsis: string | null;
   review_title: string | null;
   review_body: string | null;
   verdict: string | null;
@@ -367,4 +368,4 @@ export function parseTagsText(tagsText: string): string[] {
 }
 
 export const ENTRY_SELECT =
-  "id, title, original_title, media_type, year, status, progress_current, progress_total, progress_unit, consumption_format, volume_current, volume_total, started_on, finished_on, rating, review_title, review_body, verdict, has_spoilers, cover_image_id, created_at, updated_at";
+  "id, title, original_title, media_type, year, status, progress_current, progress_total, progress_unit, consumption_format, volume_current, volume_total, started_on, finished_on, rating, synopsis, review_title, review_body, verdict, has_spoilers, cover_image_id, created_at, updated_at";

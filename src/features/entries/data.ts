@@ -49,6 +49,7 @@ function normalizeEntry(
     volume_total: row.volume_total ?? null,
     started_on: row.started_on ?? null,
     finished_on: row.finished_on ?? null,
+    synopsis: row.synopsis ?? null,
     cover_image_id: row.cover_image_id ?? null,
     cover_path: row.cover_path ?? null,
     cover_url: row.cover_url ?? null,

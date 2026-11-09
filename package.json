@@ -11,7 +11,8 @@
     "format:check": "prettier --check .",
     "build:ghp": "next build",
     "security:check": "bash scripts/security-check.sh",
-    "auth:check-google": "bash scripts/check-google-auth.sh"
+    "auth:check-google": "bash scripts/check-google-auth.sh",
+    "seed:sample": "node scripts/seed-sample-data.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

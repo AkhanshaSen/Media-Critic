@@ -3,18 +3,16 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/layout/page-header";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ContinueRail } from "@/features/entries/continue-rail";
 import { countEntries, listEntries } from "@/features/entries/data";
 import { EntryCard } from "@/features/entries/entry-card";
-import type { MediaEntry } from "@/features/entries/schema";
+import {
+  MEDIA_TYPE_GRADIENT,
+  MEDIA_TYPE_LABELS,
+  STATUS_LABELS,
+  formatProgress,
+  type MediaEntry,
+} from "@/features/entries/schema";
 
 export default function DashboardPage() {
   const [count, setCount] = useState<number | null>(null);
@@ -56,6 +54,14 @@ export default function DashboardPage() {
 
   const recent = useMemo(() => entries.slice(0, 6), [entries]);
 
+  const featured = useMemo(() => {
+    return (
+      entries.find((e) => e.cover_url) ??
+      entries[0] ??
+      null
+    );
+  }, [entries]);
+
   const completedThisMonth = useMemo(() => {
     const now = new Date();
     const y = now.getFullYear();
@@ -69,58 +75,112 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
-      <PageHeader
-        title="Your shelf"
-        description="Private ratings, reviews, and fun progress tracking."
-        action={
+      {/* Cinematic featured hero */}
+      <section
+        className={`relative min-h-[260px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40 md:min-h-[320px] ${
+          featured
+            ? `bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[featured.media_type]}`
+            : "bg-gradient-to-br from-amber-500/20 via-card to-background"
+        }`}
+      >
+        {featured?.cover_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={featured.cover_url}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/25" />
+
+        <div className="relative z-10 flex h-full min-h-[260px] flex-col justify-between gap-6 p-6 md:min-h-[320px] md:flex-row md:items-end md:p-8">
+          <div className="flex min-w-0 flex-1 items-end gap-5">
+            {featured?.cover_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={featured.cover_url}
+                alt=""
+                className="hidden w-28 shrink-0 rounded-2xl object-cover shadow-2xl shadow-black/50 ring-1 ring-white/10 sm:block md:w-36"
+              />
+            ) : null}
+            <div className="min-w-0 space-y-3">
+              <p className="text-[11px] font-semibold tracking-[0.2em] text-amber-300 uppercase">
+                {featured ? "Featured on your shelf" : "Welcome"}
+              </p>
+              {featured ? (
+                <>
+                  <h1 className="line-clamp-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+                    {featured.title}
+                  </h1>
+                  <div className="flex flex-wrap gap-2 text-[11px] tracking-wide text-white/75 uppercase">
+                    <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">
+                      {MEDIA_TYPE_LABELS[featured.media_type]}
+                    </span>
+                    <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">
+                      {STATUS_LABELS[featured.status]}
+                    </span>
+                    <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur tabular-nums">
+                      {formatProgress(featured)}
+                    </span>
+                  </div>
+                  <Link
+                    href={`/entries/view/?id=${featured.id}`}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold shadow-lg shadow-amber-900/30"
+                  >
+                    Open entry
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
+                    Your private shelf
+                  </h1>
+                  <p className="max-w-md text-sm text-white/70">
+                    Track anime, movies, manga, and more — with covers, ratings,
+                    and one-tap progress.
+                  </p>
+                  <Link
+                    href="/add/"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold shadow-lg shadow-amber-900/30"
+                  >
+                    Add title
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
           <Link
             href="/add/"
-            className="bg-primary text-primary-foreground hover:bg-primary/85 inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium shadow-md shadow-primary/20"
+            className="border-white/20 bg-white/10 hover:bg-white/15 inline-flex h-10 shrink-0 items-center self-start rounded-lg border px-4 text-sm font-medium text-white backdrop-blur md:self-end"
           >
             Add title
           </Link>
-        }
-      />
+        </div>
+      </section>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border-primary/20 bg-card/60 shadow-lg shadow-black/20 ring-1 ring-primary/10">
-          <CardHeader>
-            <CardTitle>On shelf</CardTitle>
-            <CardDescription>All titles</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {error ? (
-              <p className="text-destructive text-sm">{error}</p>
-            ) : (
-              <p className="text-4xl font-semibold tabular-nums">
-                {loading ? "…" : (count ?? 0)}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="border-white/10 bg-card/60 shadow-lg shadow-black/20">
-          <CardHeader>
-            <CardTitle>In progress</CardTitle>
-            <CardDescription>Watching & reading</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-semibold tabular-nums">
-              {loading ? "…" : continueList.length}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-white/10 bg-card/60 shadow-lg shadow-black/20">
-          <CardHeader>
-            <CardTitle>Finished</CardTitle>
-            <CardDescription>This month</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-semibold tabular-nums">
-              {loading ? "…" : completedThisMonth}
-            </p>
-          </CardContent>
-        </Card>
+      {/* Compact stat strip */}
+      <div className="flex flex-wrap gap-3">
+        <div className="bg-card/50 border-border/60 flex items-baseline gap-2 rounded-full border px-4 py-2 text-sm shadow-md shadow-black/20">
+          <span className="text-muted-foreground">On shelf</span>
+          <span className="text-lg font-semibold tabular-nums">
+            {error ? "—" : loading ? "…" : (count ?? 0)}
+          </span>
+        </div>
+        <div className="bg-card/50 border-border/60 flex items-baseline gap-2 rounded-full border px-4 py-2 text-sm shadow-md shadow-black/20">
+          <span className="text-muted-foreground">In progress</span>
+          <span className="text-lg font-semibold tabular-nums">
+            {loading ? "…" : continueList.length}
+          </span>
+        </div>
+        <div className="bg-card/50 border-border/60 flex items-baseline gap-2 rounded-full border px-4 py-2 text-sm shadow-md shadow-black/20">
+          <span className="text-muted-foreground">Finished this month</span>
+          <span className="text-lg font-semibold tabular-nums">
+            {loading ? "…" : completedThisMonth}
+          </span>
+        </div>
       </div>
+
+      {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {!loading && continueList.length > 0 ? (
         <ContinueRail entries={continueList} />
@@ -128,7 +188,7 @@ export default function DashboardPage() {
 
       <section className="space-y-4">
         <div className="flex items-end justify-between">
-          <h2 className="text-lg font-semibold tracking-tight">
+          <h2 className="border-l-2 border-amber-400 pl-3 text-xl font-bold tracking-tight">
             Recently updated
           </h2>
           <Link
@@ -148,7 +208,7 @@ export default function DashboardPage() {
             </p>
             <Link
               href="/add/"
-              className="bg-primary text-primary-foreground mt-4 inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium"
+              className="bg-primary text-primary-foreground mt-4 inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold"
             >
               Add a title
             </Link>

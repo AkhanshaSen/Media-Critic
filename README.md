@@ -55,6 +55,14 @@ npm run dev
 
 Open **http://localhost:3000** (prefer `localhost` over `127.0.0.1`) → Google or magic link.
 
+Optional demo shelf (CC0/Wikimedia covers + DiceBear avatar) for your existing signed-in user:
+
+```bash
+npm run seed:sample
+```
+
+Requires the Supabase CLI signed in on this Mac (or `SUPABASE_ACCESS_TOKEN`). Re-runs replace entries tagged `sample-seed`.
+
 ## GitHub Pages deploy
 
 1. Set repo name → `NEXT_PUBLIC_BASE_PATH` (e.g. `/Media-Critic`).

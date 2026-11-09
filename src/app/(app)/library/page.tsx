@@ -6,6 +6,13 @@ import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { listEntries } from "@/features/entries/data";
 import { EntryCard } from "@/features/entries/entry-card";
 import {
@@ -15,6 +22,8 @@ import {
   STATUS_LABELS,
   type MediaEntry,
 } from "@/features/entries/schema";
+
+const ALL = "__all__";
 
 export default function LibraryPage() {
   const [entries, setEntries] = useState<MediaEntry[]>([]);
@@ -52,7 +61,7 @@ export default function LibraryPage() {
         action={
           <Link
             href="/add/"
-            className="bg-primary text-primary-foreground hover:bg-primary/85 inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium"
+            className="bg-primary text-primary-foreground hover:bg-primary/85 inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold shadow-md shadow-amber-900/20"
           >
             Add title
           </Link>
@@ -60,7 +69,7 @@ export default function LibraryPage() {
       />
 
       <form
-        className="border-border bg-card/40 grid gap-3 rounded-xl border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="border-border bg-card/40 grid gap-3 rounded-2xl border p-4 sm:grid-cols-2 lg:grid-cols-4"
         onSubmit={(e) => {
           e.preventDefault();
           void load();
@@ -70,44 +79,72 @@ export default function LibraryPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search title…"
+          className="lg:col-span-1"
         />
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+
+        <Select
+          value={type || ALL}
+          onValueChange={(v) => setType(!v || v === ALL ? "" : String(v))}
         >
-          <option value="">All types</option>
-          {MEDIA_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {MEDIA_TYPE_LABELS[t]}
-            </option>
-          ))}
-        </select>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+          <SelectTrigger className="h-9 w-full min-w-0">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>All types</SelectItem>
+            {MEDIA_TYPES.map((t) => (
+              <SelectItem key={t} value={t}>
+                {MEDIA_TYPE_LABELS[t]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={status || ALL}
+          onValueChange={(v) => setStatus(!v || v === ALL ? "" : String(v))}
         >
-          <option value="">All statuses</option>
-          {ENTRY_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
-        <select
+          <SelectTrigger className="h-9 w-full min-w-0">
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>All statuses</SelectItem>
+            {ENTRY_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
           value={sort}
-          onChange={(e) =>
-            setSort(e.target.value as "updated" | "rating" | "title" | "year")
-          }
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+          onValueChange={(v) => {
+            const next = String(v || "updated");
+            if (
+              next === "updated" ||
+              next === "rating" ||
+              next === "title" ||
+              next === "year"
+            ) {
+              setSort(next);
+            }
+          }}
         >
-          <option value="updated">Recently updated</option>
-          <option value="rating">Rating</option>
-          <option value="title">Title</option>
-          <option value="year">Year</option>
-        </select>
-        <Button type="submit" className="sm:col-span-2 sm:w-fit lg:col-span-4">
+          <SelectTrigger className="h-9 w-full min-w-0">
+            <SelectValue placeholder="Sort" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="updated">Recently updated</SelectItem>
+            <SelectItem value="rating">Rating</SelectItem>
+            <SelectItem value="title">Title</SelectItem>
+            <SelectItem value="year">Year</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Button
+          type="submit"
+          className="bg-amber-400 font-semibold text-amber-950 hover:bg-amber-300 sm:col-span-2 sm:w-fit lg:col-span-4"
+        >
           Apply filters
         </Button>
       </form>
@@ -115,13 +152,14 @@ export default function LibraryPage() {
       {loading ? (
         <p className="text-muted-foreground text-sm">Loading…</p>
       ) : entries.length === 0 ? (
-        <div className="border-border rounded-xl border border-dashed p-10 text-center">
-          <p className="text-muted-foreground text-sm">
+        <div className="border-border rounded-2xl border border-dashed p-10 text-center">
+          <p className="text-lg font-semibold tracking-tight">Start your shelf</p>
+          <p className="text-muted-foreground mt-2 text-sm">
             No titles match. Add one or clear filters.
           </p>
           <Link
             href="/add/"
-            className="bg-primary text-primary-foreground mt-4 inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium"
+            className="bg-amber-400 mt-4 inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold text-amber-950 hover:bg-amber-300"
           >
             Add title
           </Link>

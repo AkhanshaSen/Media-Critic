@@ -22,8 +22,8 @@ export function ContinueRail({
   return (
     <section className="space-y-4">
       <div className="flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Continue</h2>
+        <div className="border-l-2 border-amber-400 pl-3">
+          <h2 className="text-xl font-bold tracking-tight">Continue</h2>
           <p className="text-muted-foreground text-sm">
             One tap +1 — keep the streak going
           </p>
@@ -39,7 +39,7 @@ export function ContinueRail({
         {entries.map((entry) => (
           <div
             key={entry.id}
-            className="border-border/80 bg-card/50 w-[min(100%,280px)] shrink-0 overflow-hidden rounded-2xl border shadow-lg shadow-black/20"
+            className="border-border/80 bg-card/50 w-[min(100%,320px)] shrink-0 overflow-hidden rounded-2xl border shadow-lg shadow-black/20"
           >
             <Link
               href={`/entries/view/?id=${entry.id}`}

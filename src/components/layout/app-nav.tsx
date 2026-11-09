@@ -2,16 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  BarChart2,
+  Home,
+  Library,
+  PlusCircle,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/dashboard/", label: "Home", enabled: true },
-  { href: "/library/", label: "Library", enabled: true },
-  { href: "/add/", label: "Add", enabled: true },
-  { href: "/stats/", label: "Stats", enabled: false },
-  { href: "/settings/", label: "Settings", enabled: false },
-] as const;
+const navItems: {
+  href: string;
+  label: string;
+  enabled: boolean;
+  icon: LucideIcon;
+}[] = [
+  { href: "/dashboard/", label: "Home", enabled: true, icon: Home },
+  { href: "/library/", label: "Library", enabled: true, icon: Library },
+  { href: "/add/", label: "Add", enabled: true, icon: PlusCircle },
+  { href: "/stats/", label: "Stats", enabled: false, icon: BarChart2 },
+  { href: "/settings/", label: "Settings", enabled: false, icon: Settings },
+];
 
 function isActivePath(pathname: string, href: string) {
   if (pathname === href || pathname === href.replace(/\/$/, "")) return true;
@@ -25,7 +38,7 @@ export function AppSidebar() {
   return (
     <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border hidden w-60 shrink-0 border-r md:flex md:flex-col">
       <div className="border-sidebar-border relative overflow-hidden border-b px-5 py-7">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-500/25 via-violet-600/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-400/25 via-orange-600/10 to-transparent" />
         <Link
           href="/dashboard/"
           className="relative text-xl font-bold tracking-tight"
@@ -35,20 +48,23 @@ export function AppSidebar() {
         <p className="text-muted-foreground relative mt-1 text-xs">
           Your private shelf
         </p>
+        <div className="relative mt-4 h-px w-12 bg-gradient-to-r from-amber-400/80 to-transparent" />
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
         {navItems.map((item) => {
           const isActive = isActivePath(pathname, item.href);
+          const Icon = item.icon;
 
           if (!item.enabled) {
             return (
               <span
                 key={item.href}
-                className="text-muted-foreground cursor-not-allowed rounded-xl px-3 py-2.5 text-sm"
+                className="text-muted-foreground flex cursor-not-allowed items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm"
                 title="Coming later"
               >
+                <Icon className="size-4 opacity-60" aria-hidden />
                 {item.label}
-                <span className="ml-2 text-[10px] uppercase tracking-wide opacity-70">
+                <span className="ml-auto text-[10px] uppercase tracking-wide opacity-70">
                   soon
                 </span>
               </span>
@@ -60,12 +76,13 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-xl px-3 py-2.5 text-sm transition-colors",
+                "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors",
                 isActive
-                  ? "bg-sky-500/20 text-sky-100 font-semibold shadow-inner ring-1 ring-sky-400/30"
+                  ? "bg-amber-400/15 font-semibold text-amber-300 ring-1 ring-amber-400/30"
                   : "hover:bg-sidebar-accent/70",
               )}
             >
+              <Icon className="size-4 shrink-0" aria-hidden />
               {item.label}
             </Link>
           );
@@ -85,6 +102,7 @@ export function MobileTabBar() {
     >
       {navItems.map((item) => {
         const isActive = isActivePath(pathname, item.href);
+        const Icon = item.icon;
 
         if (!item.enabled) {
           return (
@@ -92,6 +110,7 @@ export function MobileTabBar() {
               key={item.href}
               className="text-muted-foreground flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 text-[11px]"
             >
+              <Icon className="size-4 opacity-50" aria-hidden />
               {item.label}
             </span>
           );
@@ -104,10 +123,11 @@ export function MobileTabBar() {
             className={cn(
               "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px]",
               isActive
-                ? "text-sky-200 font-semibold"
+                ? "font-semibold text-amber-300"
                 : "text-muted-foreground",
             )}
           >
+            <Icon className="size-4" aria-hidden />
             {item.label}
           </Link>
         );
