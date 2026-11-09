@@ -269,7 +269,7 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
   return (
     <form
       onSubmit={onSubmit}
-      className="mx-auto flex w-full max-w-2xl flex-col gap-8"
+      className="mx-auto flex w-full max-w-2xl flex-col gap-5"
       noValidate
     >
       {error ? (
@@ -305,17 +305,16 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
 
       <section
         id="form-images"
-        className="border-border scroll-mt-28 space-y-6 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-4 shadow-lg shadow-black/10"
       >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Images
         </h2>
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Poster (2:3)</p>
+        <div className="grid items-start gap-3 sm:grid-cols-[auto_1fr]">
           <CoverPicker
             aspect="poster"
-            title="Add a poster"
-            description="Shown on cards and as the small cover on the entry page. JPEG, PNG, or WebP up to 5 MB."
+            title="Poster (2:3)"
+            description="Cards & entry cover · JPEG/PNG/WebP · 5 MB"
             previewUrl={
               coverFile
                 ? coverPreview
@@ -345,13 +344,10 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
               setCoverPreview(null);
             }}
           />
-        </div>
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Hero backdrop (16:9, optional)</p>
           <CoverPicker
             aspect="backdrop"
-            title="Add a wide hero image"
-            description="Used behind the title on the entry page. Falls back to the poster if empty."
+            title="Hero (16:9, optional)"
+            description="Title backdrop · falls back to poster"
             previewUrl={
               backdropFile
                 ? backdropPreview
@@ -387,7 +383,7 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
 
       <section
         id="form-basics"
-        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-4 shadow-lg shadow-black/10"
       >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Basics
@@ -510,7 +506,7 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
 
       <section
         id="form-progress"
-        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-4 shadow-lg shadow-black/10"
       >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Progress
@@ -651,7 +647,7 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
 
       <section
         id="form-review"
-        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10"
+        className="border-border scroll-mt-28 space-y-4 rounded-2xl border bg-card/40 p-4 shadow-lg shadow-black/10"
       >
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
           Review
@@ -683,7 +679,7 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
           <Label htmlFor="review_body">Review</Label>
           <Textarea
             id="review_body"
-            rows={6}
+            rows={4}
             value={String(values.review_body)}
             onChange={(e) => setField("review_body", e.target.value)}
             disabled={pending}

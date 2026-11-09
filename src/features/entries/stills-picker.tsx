@@ -68,18 +68,17 @@ export function StillsPicker({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div
         className={cn(
-          "border-border flex flex-col items-start gap-3 rounded-2xl border border-dashed bg-card/40 p-4",
+          "border-border flex flex-col items-start gap-2 rounded-xl border border-dashed bg-card/40 p-3",
           disabled && "opacity-50",
         )}
       >
         <div>
           <p className="text-sm font-semibold">Add more photos</p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            Extra stills show in a carousel and gallery on the entry page. Up to{" "}
-            {MAX_STILLS} total ({room} left to add now). JPEG, PNG, or WebP · 5 MB
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            Up to {MAX_STILLS} stills ({room} left). JPEG, PNG, or WebP · 5 MB
             each.
           </p>
         </div>
