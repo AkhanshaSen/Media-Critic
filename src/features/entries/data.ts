@@ -319,6 +319,89 @@ export async function updateUserTheme(theme: UserTheme): Promise<DataResult> {
   return { ok: true };
 }
 
+export async function getSharePrefs(): Promise<{
+  watermark_enabled: boolean;
+}> {
+  const userId = await requireUserId();
+  if (!userId) return { watermark_enabled: true };
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("user_settings")
+    .select("watermark_enabled")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  return {
+    watermark_enabled: data?.watermark_enabled !== false,
+  };
+}
+
+export async function updateWatermarkEnabled(
+  enabled: boolean,
+): Promise<DataResult> {
+  const userId = await requireUserId();
+  if (!userId) return { ok: false, error: "Sign in required." };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("user_settings")
+    .update({ watermark_enabled: enabled })
+    .eq("user_id", userId);
+
+  if (error) {
+    return { ok: false, error: "Could not save share preference." };
+  }
+  return { ok: true };
+}
+
+export async function getAlwaysShowSpoilers(): Promise<boolean> {
+  const userId = await requireUserId();
+  if (!userId) {
+    try {
+      return window.localStorage.getItem("media-critic-always-spoilers") === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("user_settings")
+    .select("always_show_spoilers")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  return Boolean(data?.always_show_spoilers);
+}
+
+export async function updateAlwaysShowSpoilers(
+  enabled: boolean,
+): Promise<DataResult> {
+  try {
+    window.localStorage.setItem(
+      "media-critic-always-spoilers",
+      enabled ? "1" : "0",
+    );
+  } catch {
+    /* ignore */
+  }
+
+  const userId = await requireUserId();
+  if (!userId) return { ok: true };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("user_settings")
+    .update({ always_show_spoilers: enabled })
+    .eq("user_id", userId);
+
+  if (error) {
+    return { ok: false, error: "Could not save spoiler preference." };
+  }
+  return { ok: true };
+}
+
 /** Mean rating across the signed-in user's rated shelf titles. */
 export async function getShelfAverageRating(): Promise<number | null> {
   const userId = await requireUserId();

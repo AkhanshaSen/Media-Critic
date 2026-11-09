@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { EmptyShelfIllustration } from "@/components/layout/empty-shelf";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ContinueRail } from "@/features/entries/continue-rail";
 import { countEntries, listEntries } from "@/features/entries/data";
 import { EntryCard } from "@/features/entries/entry-card";
@@ -201,20 +203,16 @@ export default function DashboardPage() {
           </Link>
         </div>
         {loading ? (
-          <p className="text-muted-foreground text-sm">Loading…</p>
-        ) : recent.length === 0 ? (
-          <div className="border-border rounded-2xl border border-dashed p-10 text-center">
-            <p className="text-muted-foreground text-sm">
-              Nothing here yet. Add a title with a cover poster, then tap +1 as
-              you go.
-            </p>
-            <Link
-              href="/add/"
-              className="bg-primary text-primary-foreground mt-4 inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold"
-            >
-              Add a title
-            </Link>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-[2/3] w-full" />
+            ))}
           </div>
+        ) : recent.length === 0 ? (
+          <EmptyShelfIllustration
+            title="Nothing on your shelf yet"
+            description="Add a title with a cover poster, then tap +1 as you go."
+          />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recent.map((entry) => (

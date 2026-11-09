@@ -10,6 +10,26 @@ import { cn } from "@/lib/utils";
 
 export type SharePreviewTheme = "dark" | "light";
 
+function WatermarkLine({
+  theme,
+  enabled,
+}: {
+  theme: SharePreviewTheme;
+  enabled: boolean;
+}) {
+  if (!enabled) return null;
+  return (
+    <p
+      className={cn(
+        "pt-1 text-[9px] tracking-widest uppercase",
+        theme === "light" ? "text-stone-400" : "text-white/35",
+      )}
+    >
+      Media Critic
+    </p>
+  );
+}
+
 export function ShareCardPreview({
   entry,
   template,
@@ -18,6 +38,7 @@ export function ShareCardPreview({
   theme = "dark",
   showShelfAverage = false,
   shelfAverage = null,
+  watermark = true,
 }: {
   entry: MediaEntry;
   template: ShareTemplate;
@@ -26,6 +47,7 @@ export function ShareCardPreview({
   theme?: SharePreviewTheme;
   showShelfAverage?: boolean;
   shelfAverage?: number | null;
+  watermark?: boolean;
 }) {
   return (
     <button
@@ -54,6 +76,7 @@ export function ShareCardPreview({
           theme={theme}
           showShelfAverage={showShelfAverage}
           shelfAverage={shelfAverage}
+          watermark={watermark}
         />
       ) : template === "poster_score" ? (
         <PosterScoreCard
@@ -61,6 +84,7 @@ export function ShareCardPreview({
           theme={theme}
           showShelfAverage={showShelfAverage}
           shelfAverage={shelfAverage}
+          watermark={watermark}
         />
       ) : (
         <VerdictQuoteCard
@@ -68,6 +92,7 @@ export function ShareCardPreview({
           theme={theme}
           showShelfAverage={showShelfAverage}
           shelfAverage={shelfAverage}
+          watermark={watermark}
         />
       )}
     </button>
@@ -105,11 +130,13 @@ function MinimalDarkCard({
   theme,
   showShelfAverage,
   shelfAverage,
+  watermark,
 }: {
   entry: MediaEntry;
   theme: SharePreviewTheme;
   showShelfAverage: boolean;
   shelfAverage: number | null;
+  watermark: boolean;
 }) {
   const light = theme === "light";
   return (
@@ -119,14 +146,7 @@ function MinimalDarkCard({
         light ? "bg-[#f7f4ef]" : "bg-[#0b0b0f]",
       )}
     >
-      <p
-        className={cn(
-          "text-[10px] tracking-widest uppercase",
-          light ? "text-stone-400" : "text-white/50",
-        )}
-      >
-        Media Critic
-      </p>
+      <WatermarkLine theme={theme} enabled={watermark} />
       <p
         className={cn(
           "line-clamp-2 text-sm font-semibold",
@@ -153,11 +173,13 @@ function PosterScoreCard({
   theme,
   showShelfAverage,
   shelfAverage,
+  watermark,
 }: {
   entry: MediaEntry;
   theme: SharePreviewTheme;
   showShelfAverage: boolean;
   shelfAverage: number | null;
+  watermark: boolean;
 }) {
   const light = theme === "light";
   return (
@@ -221,6 +243,7 @@ function PosterScoreCard({
         {showShelfAverage ? (
           <ShelfAvgLine theme={theme} shelfAverage={shelfAverage} />
         ) : null}
+        <WatermarkLine theme={theme} enabled={watermark} />
       </div>
     </div>
   );
@@ -231,11 +254,13 @@ function VerdictQuoteCard({
   theme,
   showShelfAverage,
   shelfAverage,
+  watermark,
 }: {
   entry: MediaEntry;
   theme: SharePreviewTheme;
   showShelfAverage: boolean;
   shelfAverage: number | null;
+  watermark: boolean;
 }) {
   const light = theme === "light";
   return (
@@ -265,6 +290,7 @@ function VerdictQuoteCard({
       {showShelfAverage ? (
         <ShelfAvgLine theme={theme} shelfAverage={shelfAverage} />
       ) : null}
+      <WatermarkLine theme={theme} enabled={watermark} />
     </div>
   );
 }

@@ -23,7 +23,7 @@ export function PageHeader({
       {breadcrumb?.length ? <ScreenBreadcrumb items={breadcrumb} /> : null}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight md:text-3xl">
             {title}
           </h1>
           {description ? (

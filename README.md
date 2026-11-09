@@ -36,6 +36,7 @@ NEXT_PUBLIC_BASE_PATH=
 4. [`supabase/migrations/20261109000004_progress_format.sql`](supabase/migrations/20261109000004_progress_format.sql) — progress unit, digital/physical format, volume fields
 5. [`supabase/migrations/20261109000005_image_roles.sql`](supabase/migrations/20261109000005_image_roles.sql) — poster / backdrop / still roles + `backdrop_image_id`
 6. [`supabase/migrations/20261109000006_page_template.sql`](supabase/migrations/20261109000006_page_template.sql) — cinematic / magazine / minimal page looks
+7. [`supabase/migrations/20261109000007_spoiler_prefs.sql`](supabase/migrations/20261109000007_spoiler_prefs.sql) — `always_show_spoilers` on `user_settings`
 
 If you previously ran `00001_anonymous_shelf.sql`, still run `00002` then `00003` (and later migrations) before public deploy.
 

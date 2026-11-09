@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type CSSProperties, type Dispatch, type SetStateAction } from "react";
 
 import {
   Card,
@@ -13,8 +13,10 @@ import {
 import type { EntryImage } from "@/features/entries/cover-image";
 import { DeleteEntryButton } from "@/features/entries/delete-entry-button";
 import { EntryGallery } from "@/features/entries/entry-gallery";
+import { MediaTypeBadge } from "@/features/entries/media-type-badge";
 import { ProgressControls } from "@/features/entries/progress-controls";
 import { RatingStars } from "@/features/entries/rating-stars";
+import { SpoilerGuard } from "@/features/entries/spoiler-guard";
 import {
   CONSUMPTION_FORMAT_LABELS,
   MEDIA_TYPE_GRADIENT,
@@ -30,6 +32,8 @@ export type EntryLayoutProps = {
   tags: string[];
   stills: EntryImage[];
   onEntryChange: Dispatch<SetStateAction<MediaEntry | null>>;
+  alwaysShowSpoilers?: boolean;
+  accentStyle?: CSSProperties;
 };
 
 export function EntryLayoutByTemplate({
@@ -45,9 +49,7 @@ function MetaPills({ entry }: { entry: MediaEntry }) {
   const format = entry.consumption_format ?? "digital";
   return (
     <div className="flex flex-wrap gap-2 text-[11px] font-medium tracking-wide uppercase">
-      <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
-        {MEDIA_TYPE_LABELS[entry.media_type]}
-      </span>
+      <MediaTypeBadge type={entry.media_type} />
       <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
         {STATUS_LABELS[entry.status]}
       </span>
@@ -112,13 +114,42 @@ function TimelineCard({ entry }: { entry: MediaEntry }) {
   );
 }
 
+function CollapsibleReviewBody({ body }: { body: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const long = body.length > 320;
+  const shown = !long || expanded ? body : `${body.slice(0, 320).trimEnd()}…`;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
+        {shown}
+      </p>
+      {long ? (
+        <button
+          type="button"
+          className="text-primary text-xs font-semibold hover:underline"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function ReviewBlocks({
   entry,
   tags,
+  alwaysShowSpoilers = false,
 }: {
   entry: MediaEntry;
   tags: string[];
+  alwaysShowSpoilers?: boolean;
 }) {
+  const spoilers = entry.has_spoilers && !alwaysShowSpoilers;
+  const body =
+    entry.review_body || "No review yet — tap Edit above to write one.";
+
   return (
     <>
       {entry.verdict ? (
@@ -126,7 +157,11 @@ function ReviewBlocks({
           <CardHeader>
             <CardTitle className="text-base">Verdict</CardTitle>
           </CardHeader>
-          <CardContent className="text-lg italic">{entry.verdict}</CardContent>
+          <CardContent>
+            <SpoilerGuard active={spoilers}>
+              <p className="text-lg italic">{entry.verdict}</p>
+            </SpoilerGuard>
+          </CardContent>
         </Card>
       ) : null}
 
@@ -136,13 +171,15 @@ function ReviewBlocks({
             {entry.review_title || "What I thought"}
           </CardTitle>
           {entry.has_spoilers ? (
-            <CardDescription className="text-amber-200/90">
+            <CardDescription className="text-amber-700 dark:text-amber-200/90">
               Contains spoilers
             </CardDescription>
           ) : null}
         </CardHeader>
-        <CardContent className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-          {entry.review_body || "No review yet — tap Edit above to write one."}
+        <CardContent>
+          <SpoilerGuard active={spoilers}>
+            <CollapsibleReviewBody body={body} />
+          </SpoilerGuard>
         </CardContent>
       </Card>
 
@@ -155,7 +192,7 @@ function ReviewBlocks({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs text-amber-200"
+                className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs text-amber-800 dark:text-amber-200"
               >
                 {tag}
               </span>
@@ -173,14 +210,22 @@ export function CinematicLayout({
   tags,
   stills,
   onEntryChange,
+  alwaysShowSpoilers,
+  accentStyle,
 }: EntryLayoutProps) {
   const heroUrl = entry.backdrop_url ?? entry.cover_url;
   const posterUrl = entry.cover_url;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <div
+      className="mx-auto flex w-full max-w-5xl flex-col gap-6"
+      style={accentStyle}
+    >
       <section
-        className={`relative min-h-[380px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/50 md:min-h-[460px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+        className={`relative min-h-[380px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl md:min-h-[460px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+        style={{
+          boxShadow: `0 25px 50px -12px var(--entry-glow, rgb(0 0 0 / 0.5))`,
+        }}
       >
         {heroUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -217,7 +262,7 @@ export function CinematicLayout({
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <MetaPills entry={entry} />
-            <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">
+            <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight text-white md:text-5xl">
               {entry.title}
             </h1>
             {entry.original_title ? (
@@ -252,7 +297,11 @@ export function CinematicLayout({
             </Card>
           ) : null}
           <EntryGallery stills={stills} />
-          <ReviewBlocks entry={entry} tags={tags} />
+          <ReviewBlocks
+            entry={entry}
+            tags={tags}
+            alwaysShowSpoilers={alwaysShowSpoilers}
+          />
         </div>
         <div className="space-y-4">
           <TimelineCard entry={entry} />
@@ -269,11 +318,16 @@ export function MagazineLayout({
   tags,
   stills,
   onEntryChange,
+  alwaysShowSpoilers,
+  accentStyle,
 }: EntryLayoutProps) {
   const posterUrl = entry.cover_url;
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+    <div
+      className="mx-auto flex w-full max-w-4xl flex-col gap-8"
+      style={accentStyle}
+    >
       <div className="grid gap-8 md:grid-cols-[220px_1fr]">
         <div className="space-y-4">
           {posterUrl ? (
@@ -281,7 +335,10 @@ export function MagazineLayout({
             <img
               src={posterUrl}
               alt=""
-              className="w-full rounded-2xl object-cover shadow-2xl ring-1 ring-amber-400/20"
+              className="w-full rounded-2xl object-cover shadow-2xl ring-1"
+              style={{
+                boxShadow: `0 0 0 1px var(--entry-accent, rgb(251 191 36 / 0.2))`,
+              }}
             />
           ) : (
             <div
@@ -325,7 +382,7 @@ export function MagazineLayout({
               {MEDIA_TYPE_LABELS[entry.media_type]}
               {entry.year ? ` · ${entry.year}` : ""}
             </p>
-            <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight text-white md:text-5xl">
+            <h1 className="mt-1 font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight text-white md:text-5xl">
               {entry.title}
             </h1>
             {entry.original_title ? (
@@ -342,15 +399,11 @@ export function MagazineLayout({
             </p>
           ) : null}
 
-          <div className="space-y-3 border-t border-white/10 pt-4">
-            <h2 className="text-lg font-semibold">What I thought</h2>
-            {entry.verdict ? (
-              <p className="text-xl text-amber-100/90 italic">{entry.verdict}</p>
-            ) : null}
-            <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-              {entry.review_body || "No review yet — tap Edit above to write one."}
-            </p>
-          </div>
+          <ReviewBlocks
+            entry={entry}
+            tags={tags}
+            alwaysShowSpoilers={alwaysShowSpoilers}
+          />
 
           <EntryGallery stills={stills} />
         </div>
@@ -365,11 +418,16 @@ export function MinimalLayout({
   tags,
   stills,
   onEntryChange,
+  alwaysShowSpoilers,
+  accentStyle,
 }: EntryLayoutProps) {
   const posterUrl = entry.cover_url;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+    <div
+      className="mx-auto flex w-full max-w-3xl flex-col gap-5"
+      style={accentStyle}
+    >
       <Card className="overflow-hidden border-white/10 bg-card/60">
         <div className="flex gap-4 p-4">
           {posterUrl ? (
@@ -386,7 +444,9 @@ export function MinimalLayout({
           )}
           <div className="min-w-0 flex-1 space-y-2">
             <MetaPills entry={entry} />
-            <h1 className="text-2xl font-bold tracking-tight">{entry.title}</h1>
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-tight">
+              {entry.title}
+            </h1>
             <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
               <span className="tabular-nums">{formatProgress(entry)}</span>
               {entry.rating != null ? (
@@ -420,7 +480,11 @@ export function MinimalLayout({
       ) : null}
 
       <EntryGallery stills={stills} />
-      <ReviewBlocks entry={entry} tags={tags} />
+      <ReviewBlocks
+        entry={entry}
+        tags={tags}
+        alwaysShowSpoilers={alwaysShowSpoilers}
+      />
       <DeleteEntryButton entryId={entry.id} />
     </div>
   );

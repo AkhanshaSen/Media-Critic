@@ -3,25 +3,15 @@
 import Link from "next/link";
 
 import { ProgressBar } from "@/features/entries/progress-bar";
+import { MediaTypeBadge } from "@/features/entries/media-type-badge";
 import { RatingStars } from "@/features/entries/rating-stars";
 import {
   CONSUMPTION_FORMAT_LABELS,
   MEDIA_TYPE_GRADIENT,
-  MEDIA_TYPE_LABELS,
   STATUS_LABELS,
   formatProgress,
   type MediaEntry,
 } from "@/features/entries/schema";
-
-const TYPE_DOT: Record<MediaEntry["media_type"], string> = {
-  anime: "bg-violet-400",
-  movie: "bg-rose-400",
-  series: "bg-sky-400",
-  manga: "bg-amber-400",
-  manhwa: "bg-fuchsia-400",
-  manhua: "bg-teal-400",
-  novel: "bg-lime-400",
-};
 
 export function EntryCard({ entry }: { entry: MediaEntry }) {
   const format = entry.consumption_format ?? "digital";
@@ -44,13 +34,10 @@ export function EntryCard({ entry }: { entry: MediaEntry }) {
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
         <div className="absolute top-3 right-3 left-3 flex items-start justify-between gap-2">
-          <span className="bg-background/80 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium tracking-wide uppercase backdrop-blur">
-            <span
-              className={`size-1.5 shrink-0 rounded-full ${TYPE_DOT[entry.media_type]}`}
-              aria-hidden
-            />
-            {MEDIA_TYPE_LABELS[entry.media_type]}
-          </span>
+          <MediaTypeBadge
+            type={entry.media_type}
+            className="bg-background/80 backdrop-blur"
+          />
           {entry.rating != null ? (
             <span className="rounded-xl bg-amber-400 px-2 py-1 shadow-md">
               <RatingStars

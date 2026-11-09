@@ -1,36 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import {
+  getAlwaysShowSpoilers,
   getEntry,
   getEntryTags,
+  getSharePrefs,
   getShareTemplate,
   listEntryImages,
+  updateAlwaysShowSpoilers,
+  updateWatermarkEnabled,
   type EntryImage,
 } from "@/features/entries/data";
 import { EntryLayoutByTemplate } from "@/features/entries/entry-layouts";
-import {
-  EntryPageChrome,
-  type ShareStatus,
-} from "@/features/entries/entry-page-chrome";
+import { EntryPageChrome } from "@/features/entries/entry-page-chrome";
 import { shareEntryReview } from "@/features/entries/share-cards";
-import {
-  TemplateExplorer,
-  useLooksOpenState,
-} from "@/features/entries/template-explorer";
+import { ShareStudioDialog } from "@/features/entries/share-studio";
 import type {
   MediaEntry,
   PageTemplate,
   ShareTemplate,
 } from "@/features/entries/schema";
+import { extractCoverAccent } from "@/lib/cover-accent";
 
 export default function EntryViewPage() {
   return (
     <Suspense
-      fallback={<p className="text-muted-foreground text-sm">Loading…</p>}
+      fallback={
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
     >
       <EntryViewContent />
     </Suspense>
@@ -41,16 +47,20 @@ function EntryViewContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
   const justAdded = searchParams.get("added") === "1";
+  const { toast } = useToast();
   const [entry, setEntry] = useState<MediaEntry | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [stills, setStills] = useState<EntryImage[]>([]);
   const [pageTemplate, setPageTemplate] = useState<PageTemplate>("cinematic");
   const [shareTemplate, setShareTemplate] =
     useState<ShareTemplate>("minimal_dark");
-  const [looksOpen, setLooksOpen] = useLooksOpenState();
-  const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
+  const [studioOpen, setStudioOpen] = useState(false);
+  const [watermark, setWatermark] = useState(true);
+  const [alwaysShowSpoilers, setAlwaysShowSpoilers] = useState(false);
+  const [accent, setAccent] = useState<{ accent: string; glow: string } | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
-  const shareStatusTimer = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,11 +72,13 @@ function EntryViewContent() {
         setLoading(false);
         return;
       }
-      const [e, t, images, share] = await Promise.all([
+      const [e, t, images, share, prefs, spoilers] = await Promise.all([
         getEntry(id),
         getEntryTags(id),
         listEntryImages(id),
         getShareTemplate(),
+        getSharePrefs(),
+        getAlwaysShowSpoilers(),
       ]);
       if (cancelled) return;
       setEntry(e);
@@ -74,7 +86,14 @@ function EntryViewContent() {
       setStills(images.filter((img) => img.role === "still"));
       setPageTemplate(e?.page_template ?? "cinematic");
       setShareTemplate(share);
+      setWatermark(prefs.watermark_enabled);
+      setAlwaysShowSpoilers(spoilers);
       setLoading(false);
+
+      if (e?.cover_url) {
+        const next = await extractCoverAccent(e.cover_url);
+        if (!cancelled) setAccent(next);
+      }
     }
     void load();
     return () => {
@@ -82,44 +101,44 @@ function EntryViewContent() {
     };
   }, [id]);
 
-  useEffect(() => {
-    return () => {
-      if (shareStatusTimer.current != null) {
-        window.clearTimeout(shareStatusTimer.current);
-      }
+  const accentStyle = useMemo(() => {
+    if (!accent) return undefined;
+    return {
+      ["--entry-accent" as string]: accent.accent,
+      ["--entry-glow" as string]: accent.glow,
     };
-  }, []);
-
-  function flashShareStatus(next: ShareStatus) {
-    setShareStatus(next);
-    if (shareStatusTimer.current != null) {
-      window.clearTimeout(shareStatusTimer.current);
-    }
-    shareStatusTimer.current = window.setTimeout(() => {
-      setShareStatus("idle");
-    }, 2200);
-  }
+  }, [accent]);
 
   async function handleShare() {
     if (!entry) return;
-    setLooksOpen(true);
-    window.setTimeout(() => {
-      document
-        .getElementById("share-layout")
-        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }, 60);
-
+    setStudioOpen(true);
     const result = await shareEntryReview(entry);
     if (result.ok) {
-      flashShareStatus(result.method === "share" ? "shared" : "copied");
+      toast({
+        title: result.method === "share" ? "Shared" : "Copied!",
+        description:
+          result.method === "clipboard"
+            ? "Review text is on your clipboard."
+            : undefined,
+      });
       return;
     }
-    if (result.aborted) return;
-    flashShareStatus("error");
+    if (!result.aborted) {
+      toast({ title: "Could not share", description: result.error });
+    }
   }
 
   if (loading) {
-    return <p className="text-muted-foreground text-sm">Loading…</p>;
+    return (
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-72 w-full rounded-3xl" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-40" />
+          <Skeleton className="h-40" />
+        </div>
+      </div>
+    );
   }
 
   if (!entry) {
@@ -140,21 +159,41 @@ function EntryViewContent() {
         notice={
           justAdded ? "Added to your shelf — write your review anytime." : null
         }
-        shareStatus={shareStatus}
         onShare={() => void handleShare()}
       />
 
-      <TemplateExplorer
+      {entry.has_spoilers ? (
+        <label className="text-muted-foreground inline-flex min-h-11 cursor-pointer items-center gap-2 text-xs">
+          <input
+            type="checkbox"
+            className="accent-amber-400 size-3.5"
+            checked={alwaysShowSpoilers}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setAlwaysShowSpoilers(next);
+              void updateAlwaysShowSpoilers(next);
+            }}
+          />
+          Always show spoilers
+        </label>
+      ) : null}
+
+      <ShareStudioDialog
         entry={entry}
         pageTemplate={pageTemplate}
         shareTemplate={shareTemplate}
-        open={looksOpen}
-        onOpenChange={setLooksOpen}
+        open={studioOpen}
+        onOpenChange={setStudioOpen}
         onPageTemplate={(t) => {
           setPageTemplate(t);
           setEntry((prev) => (prev ? { ...prev, page_template: t } : prev));
         }}
         onShareTemplate={setShareTemplate}
+        watermarkEnabled={watermark}
+        onWatermarkChange={(enabled) => {
+          setWatermark(enabled);
+          void updateWatermarkEnabled(enabled);
+        }}
       />
 
       <EntryLayoutByTemplate
@@ -163,6 +202,8 @@ function EntryViewContent() {
         tags={tags}
         stills={stills}
         onEntryChange={setEntry}
+        alwaysShowSpoilers={alwaysShowSpoilers}
+        accentStyle={accentStyle}
       />
     </div>
   );
