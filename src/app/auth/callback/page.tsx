@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -98,13 +99,15 @@ function CallbackContent() {
 
         const {
           data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-          if (!session) return;
-          window.clearTimeout(timer);
-          subscription.unsubscribe();
-          goTo(next);
-          resolve();
-        });
+        } = supabase.auth.onAuthStateChange(
+          (_event: AuthChangeEvent, session: Session | null) => {
+            if (!session) return;
+            window.clearTimeout(timer);
+            subscription.unsubscribe();
+            goTo(next);
+            resolve();
+          },
+        );
       });
 
       if (!active) return;
