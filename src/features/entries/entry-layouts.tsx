@@ -81,17 +81,34 @@ function ScoreBadge({ entry }: { entry: MediaEntry }) {
   );
 }
 
-function ActionButtons({ entryId }: { entryId: string }) {
+/** Interactive progress — same placement on every template (above review). */
+function ProgressTrack({
+  entry,
+  onEntryChange,
+}: {
+  entry: MediaEntry;
+  onEntryChange: Dispatch<SetStateAction<MediaEntry | null>>;
+}) {
   return (
-    <div className="flex flex-wrap gap-2">
-      <Link
-        href={`/entries/edit/?id=${entryId}`}
-        className="inline-flex h-9 items-center rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-medium text-white backdrop-blur hover:bg-white/15"
-      >
-        Edit
-      </Link>
-      <DeleteEntryButton entryId={entryId} />
-    </div>
+    <ProgressControls
+      entry={entry}
+      onChange={(next) => onEntryChange(next)}
+    />
+  );
+}
+
+function TimelineCard({ entry }: { entry: MediaEntry }) {
+  return (
+    <Card className="border-white/10 bg-card/60">
+      <CardHeader>
+        <CardTitle className="text-base">Timeline</CardTitle>
+      </CardHeader>
+      <CardContent className="text-muted-foreground space-y-1 text-sm">
+        <p>Started: {entry.started_on ?? "—"}</p>
+        <p>Finished: {entry.finished_on ?? "—"}</p>
+        <p className="tabular-nums">Progress: {formatProgress(entry)}</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -125,7 +142,7 @@ function ReviewBlocks({
           ) : null}
         </CardHeader>
         <CardContent className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-          {entry.review_body || "No review yet — add one from Edit."}
+          {entry.review_body || "No review yet — tap Edit above to write one."}
         </CardContent>
       </Card>
 
@@ -147,36 +164,6 @@ function ReviewBlocks({
         </div>
       ) : null}
     </>
-  );
-}
-
-function Sidebar({
-  entry,
-  onEntryChange,
-}: {
-  entry: MediaEntry;
-  onEntryChange: Dispatch<SetStateAction<MediaEntry | null>>;
-}) {
-  return (
-    <div className="space-y-4">
-      <ProgressControls
-        entry={entry}
-        onChange={(next) => onEntryChange(next)}
-      />
-      <Card className="border-white/10 bg-card/60">
-        <CardHeader>
-          <CardTitle className="text-base">Timeline</CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground space-y-1 text-sm">
-          <p>Started: {entry.started_on ?? "—"}</p>
-          <p>Finished: {entry.finished_on ?? "—"}</p>
-          <p className="tabular-nums">Progress: {formatProgress(entry)}</p>
-        </CardContent>
-      </Card>
-      <Link href="/library/" className="text-primary text-sm hover:underline">
-        ← Back to library
-      </Link>
-    </div>
   );
 }
 
@@ -236,19 +223,16 @@ export function CinematicLayout({
             {entry.original_title ? (
               <p className="text-white/65 text-sm">{entry.original_title}</p>
             ) : null}
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="flex flex-wrap gap-3">
-                <ScoreBadge entry={entry} />
-                <div className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white/80 backdrop-blur">
-                  <p className="text-[10px] tracking-widest uppercase opacity-70">
-                    Progress
-                  </p>
-                  <p className="font-semibold tabular-nums">
-                    {formatProgress(entry)}
-                  </p>
-                </div>
+            <div className="flex flex-wrap gap-3">
+              <ScoreBadge entry={entry} />
+              <div className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white/80 backdrop-blur">
+                <p className="text-[10px] tracking-widest uppercase opacity-70">
+                  Progress
+                </p>
+                <p className="font-semibold tabular-nums">
+                  {formatProgress(entry)}
+                </p>
               </div>
-              <ActionButtons entryId={entry.id} />
             </div>
           </div>
         </div>
@@ -256,6 +240,7 @@ export function CinematicLayout({
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <div className="space-y-4">
+          <ProgressTrack entry={entry} onEntryChange={onEntryChange} />
           {entry.synopsis ? (
             <Card className="border-white/10 bg-card/60">
               <CardHeader>
@@ -269,7 +254,10 @@ export function CinematicLayout({
           <EntryGallery stills={stills} />
           <ReviewBlocks entry={entry} tags={tags} />
         </div>
-        <Sidebar entry={entry} onEntryChange={onEntryChange} />
+        <div className="space-y-4">
+          <TimelineCard entry={entry} />
+          <DeleteEntryButton entryId={entry.id} />
+        </div>
       </div>
     </div>
   );
@@ -328,26 +316,25 @@ export function MagazineLayout({
               ))}
             </div>
           ) : null}
+          <DeleteEntryButton entryId={entry.id} />
         </div>
 
         <div className="space-y-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-muted-foreground text-xs tracking-wide uppercase">
-                {MEDIA_TYPE_LABELS[entry.media_type]}
-                {entry.year ? ` · ${entry.year}` : ""}
-              </p>
-              <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight text-white md:text-5xl">
-                {entry.title}
-              </h1>
-              {entry.original_title ? (
-                <p className="text-sky-300 mt-2 text-sm">
-                  {entry.original_title}
-                </p>
-              ) : null}
-            </div>
-            <ActionButtons entryId={entry.id} />
+          <div>
+            <p className="text-muted-foreground text-xs tracking-wide uppercase">
+              {MEDIA_TYPE_LABELS[entry.media_type]}
+              {entry.year ? ` · ${entry.year}` : ""}
+            </p>
+            <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight text-white md:text-5xl">
+              {entry.title}
+            </h1>
+            {entry.original_title ? (
+              <p className="text-sky-300 mt-2 text-sm">{entry.original_title}</p>
+            ) : null}
           </div>
+
+          <ProgressTrack entry={entry} onEntryChange={onEntryChange} />
+          <TimelineCard entry={entry} />
 
           {entry.synopsis ? (
             <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
@@ -361,12 +348,11 @@ export function MagazineLayout({
               <p className="text-xl text-amber-100/90 italic">{entry.verdict}</p>
             ) : null}
             <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-              {entry.review_body || "No review yet — add one from Edit."}
+              {entry.review_body || "No review yet — tap Edit above to write one."}
             </p>
           </div>
 
           <EntryGallery stills={stills} />
-          <Sidebar entry={entry} onEntryChange={onEntryChange} />
         </div>
       </div>
     </div>
@@ -415,10 +401,12 @@ export function MinimalLayout({
                 </>
               ) : null}
             </div>
-            <ActionButtons entryId={entry.id} />
           </div>
         </div>
       </Card>
+
+      <ProgressTrack entry={entry} onEntryChange={onEntryChange} />
+      <TimelineCard entry={entry} />
 
       {entry.synopsis ? (
         <Card className="border-white/10 bg-card/60">
@@ -433,7 +421,7 @@ export function MinimalLayout({
 
       <EntryGallery stills={stills} />
       <ReviewBlocks entry={entry} tags={tags} />
-      <Sidebar entry={entry} onEntryChange={onEntryChange} />
+      <DeleteEntryButton entryId={entry.id} />
     </div>
   );
 }

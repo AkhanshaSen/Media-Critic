@@ -100,9 +100,9 @@ export function TemplateExplorer({
 
   if (!open) {
     return (
-      <div className="border-border/80 bg-card/40 sticky top-14 z-20 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-md">
+      <div className="border-border/80 bg-card/40 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-md">
         <div className="min-w-0">
-          <p className="text-xs font-medium tracking-tight">Looks</p>
+          <p className="text-xs font-medium tracking-tight">Share & layout</p>
           <p className="text-muted-foreground truncate text-[11px]">
             {PAGE_TEMPLATE_LABELS[pageTemplate]} ·{" "}
             {SHARE_TEMPLATE_LABELS[shareTemplate]}
@@ -113,20 +113,25 @@ export function TemplateExplorer({
           onClick={() => onOpenChange(true)}
           className="border-border hover:bg-muted inline-flex h-8 shrink-0 items-center rounded-lg border px-3 text-xs font-medium"
         >
-          Customize looks
+          Open share & layout
         </button>
       </div>
     );
   }
 
   return (
-    <section className="border-border/80 bg-card/50 z-20 space-y-4 rounded-2xl border p-4 shadow-xl shadow-black/30 backdrop-blur-md">
+    <section
+      id="share-layout"
+      className="border-border/80 bg-card/50 z-20 space-y-4 rounded-2xl border p-4 shadow-xl shadow-black/30 backdrop-blur-md"
+    >
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold tracking-tight">Looks</h2>
+          <h2 className="text-sm font-semibold tracking-tight">
+            Share & layout
+          </h2>
           <p className="text-muted-foreground text-xs">
-            Freely explore page layouts and share-card styles. Changes save to
-            this title / your account.
+            Copy your review, pick a share card, or change this title&apos;s page
+            layout. Changes save to this title / your account.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -141,7 +146,7 @@ export function TemplateExplorer({
             type="button"
             onClick={() => onOpenChange(false)}
             className="border-border hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg border"
-            aria-label="Close looks"
+            aria-label="Close share and layout"
           >
             <X className="size-4" />
           </button>
@@ -229,7 +234,7 @@ export function TemplateExplorer({
   );
 }
 
-/** Collapsed by default so the entry page is readable; reopen via Customize looks. */
+/** Collapsed by default so the entry page is readable; reopen via Share & layout. */
 export function useLooksOpenState(): [boolean, (open: boolean) => void] {
   const [open, setOpen] = useState(false);
   return [open, setOpen];
