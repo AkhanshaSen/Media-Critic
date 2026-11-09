@@ -1,5 +1,5 @@
 -- Restore owner-only RLS for Google-auth / GitHub Pages public deploy
--- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
+-- Paste into: https://supabase.com/dashboard/project/xxxxxxxx/sql/new
 -- Run AFTER 20261109000001 (or whenever you leave anonymous mode)
 --
 -- Deletes anonymous open policies and restores user_id = auth.uid() rules.

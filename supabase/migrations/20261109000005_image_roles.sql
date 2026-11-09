@@ -1,5 +1,5 @@
 -- Poster vs backdrop vs stills for entry images
--- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
+-- Paste into: https://supabase.com/dashboard/project/xxxxxxxx/sql/new
 -- Run AFTER 20261109000004_progress_format.sql
 
 do $$ begin

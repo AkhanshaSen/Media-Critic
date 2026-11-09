@@ -2,7 +2,7 @@
 # Probe Supabase Google provider for local OAuth readiness.
 set -euo pipefail
 
-URL="${NEXT_PUBLIC_SUPABASE_URL:-https://kaiffjdbfjkjqisumklh.supabase.co}"
+URL="${NEXT_PUBLIC_SUPABASE_URL:?Set NEXT_PUBLIC_SUPABASE_URL in .env.local}"
 REDIRECT="${1:-http://localhost:3000/auth/callback/}"
 AUTH_URL="${URL%/}/auth/v1/authorize?provider=google&redirect_to=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$REDIRECT")"
 

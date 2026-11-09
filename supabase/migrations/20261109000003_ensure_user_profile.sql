@@ -1,5 +1,5 @@
 -- Ensure every auth.users row has public.users + user_settings
--- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
+-- Paste into: https://supabase.com/dashboard/project/xxxxxxxx/sql/new
 -- Run AFTER 20261109000002_restore_auth_rls.sql
 --
 -- Fixes accounts created in Auth before the profile trigger existed,

@@ -23,7 +23,7 @@ cp .env.example .env.local
 `.env.local` (leave `NEXT_PUBLIC_BASE_PATH` empty for local):
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://kaiffjdbfjkjqisumklh.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-publishable-or-anon-key
 NEXT_PUBLIC_BASE_PATH=
 ```
@@ -43,11 +43,11 @@ Profiles are created by a trigger on **new** `auth.users` rows and by the app ca
 
 ### Auth (local)
 
-1. Enable **Google** and **Email** in [Auth → Providers](https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/auth/providers).
+1. Enable **Google** and **Email** in Supabase **Auth → Providers** (your project in the dashboard).
 2. Google Cloud **Web** OAuth client → Authorized redirect URI  
-   `https://kaiffjdbfjkjqisumklh.supabase.co/auth/v1/callback`  
+   `https://xxxxxxxx.supabase.co/auth/v1/callback` (use your project ref, not `xxxxxxxx`)  
    Paste Client ID + Secret into Supabase Google provider → **Save**.
-3. In [Auth → URL configuration](https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/auth/url-configuration):
+3. In **Auth → URL configuration** (same Supabase project):
    - Site URL: `http://localhost:3000`
    - Redirects: `http://localhost:3000/auth/callback/` (and `/**` variants as needed)
 

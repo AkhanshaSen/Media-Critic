@@ -5,7 +5,7 @@
 -- read/write all shelf rows. After local experiments, run
 -- 20261109000002_restore_auth_rls.sql before any public URL.
 -- =============================================================================
--- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
+-- Paste into: https://supabase.com/dashboard/project/xxxxxxxx/sql/new
 -- Run AFTER 20261109000000_init.sql
 --
 -- WARNING: anon clients can read/write all shelf rows. Fine for localhost / personal use.

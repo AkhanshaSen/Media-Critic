@@ -1,5 +1,5 @@
 -- Progress units, consumption format, volume tracking for print manga/books
--- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
+-- Paste into: https://supabase.com/dashboard/project/xxxxxxxx/sql/new
 -- Run AFTER 20261109000003_ensure_user_profile.sql
 
 do $$ begin

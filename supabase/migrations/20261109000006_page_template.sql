@@ -1,5 +1,5 @@
 -- Per-entry page layout template (cinematic / magazine / minimal)
--- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
+-- Paste into: https://supabase.com/dashboard/project/xxxxxxxx/sql/new
 -- Run AFTER 20261109000005_image_roles.sql
 
 alter table public.media_entries

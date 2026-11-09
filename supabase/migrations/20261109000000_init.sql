@@ -1,5 +1,5 @@
 -- Media Critic initial schema
--- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
+-- Paste into: https://supabase.com/dashboard/project/xxxxxxxx/sql/new
 
 -- Extensions
 create extension if not exists "pgcrypto";

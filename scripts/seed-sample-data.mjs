@@ -14,10 +14,22 @@ import { randomUUID } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-const PROJECT_REF = "kaiffjdbfjkjqisumklh";
-const SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  `https://${PROJECT_REF}.supabase.co`;
+function projectRefFromEnv() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  if (!url) {
+    throw new Error(
+      "Set NEXT_PUBLIC_SUPABASE_URL in .env.local (https://xxxxxxxx.supabase.co).",
+    );
+  }
+  const m = url.match(/^https:\/\/([a-z0-9-]+)\.supabase\.co\/?$/i);
+  if (!m) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL must look like https://xxxxxxxx.supabase.co",
+    );
+  }
+  return m[1];
+}
+
 const BUCKET = "entry-images";
 const SAMPLE_TAG = "sample-seed";
 const AVATAR_URL =
@@ -140,9 +152,9 @@ function cliToken() {
   }
 }
 
-async function fetchServiceRole(token) {
+async function fetchServiceRole(token, projectRef) {
   const res = await fetch(
-    `https://api.supabase.com/v1/projects/${PROJECT_REF}/api-keys`,
+    `https://api.supabase.com/v1/projects/${projectRef}/api-keys`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
   if (!res.ok) {
@@ -248,9 +260,12 @@ async function clearPreviousSample(supabase, userId) {
 
 async function main() {
   loadEnvLocal();
+  const projectRef = projectRefFromEnv();
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   const token = cliToken();
-  const serviceRole = await fetchServiceRole(token);
-  const supabase = createClient(SUPABASE_URL, serviceRole, {
+  const serviceRole = await fetchServiceRole(token, projectRef);
+  const supabase = createClient(supabaseUrl, serviceRole, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
