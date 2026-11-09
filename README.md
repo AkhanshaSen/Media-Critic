@@ -55,19 +55,21 @@ Open **http://localhost:3000** (prefer `localhost` over `127.0.0.1`) → Continu
 
 ## GitHub Pages deploy
 
-1. Set repo name → `NEXT_PUBLIC_BASE_PATH` (e.g. `/MEDIA-CRITIC`).
+1. Set repo name → `NEXT_PUBLIC_BASE_PATH` (e.g. `/Media-Critic`).
 2. GitHub → Settings → Secrets: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 3. GitHub → Variables: `NEXT_PUBLIC_BASE_PATH=/Your-Repo-Name`.
-4. Enable Pages: source **GitHub Actions**.
+4. Enable Pages: source **GitHub Actions** (not “Deploy from a branch”).
 5. Push to `main` / `master` — workflow [`.github/workflows/deploy-ghp.yml`](.github/workflows/deploy-ghp.yml) builds `out/` and deploys.
 6. Supabase Auth Site URL / redirects for  
    `https://<user>.github.io/<repo>/` and  
    `https://<user>.github.io/<repo>/auth/callback/`
 
+After a deploy, **hard-refresh** (Cmd+Shift+R) or open an incognito window. If you still see this README rendered as the site, confirm Settings → Pages → Source is **GitHub Actions**, that the latest **Deploy GitHub Pages** run succeeded, and wait a few minutes for CDN cache (`max-age=600`).
+
 Local GHP build:
 
 ```bash
-NEXT_PUBLIC_BASE_PATH=/MEDIA-CRITIC npm run build:ghp
+NEXT_PUBLIC_BASE_PATH=/Media-Critic npm run build:ghp
 ```
 
 ## Safety check
