@@ -69,11 +69,9 @@ function CallbackContent() {
       if (!active) return;
 
       if (exchangeError) {
+        console.error("Auth code exchange failed:", exchangeError.message);
         setStatus("error");
-        setMessage(
-          exchangeError.message ||
-            "Could not complete sign-in. Try again from login.",
-        );
+        setMessage("Could not complete sign-in. Try again from login.");
         goTo("/login/?error=auth");
         return;
       }

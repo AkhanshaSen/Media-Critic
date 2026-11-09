@@ -6,7 +6,11 @@ export async function ensureUserProfile(
 ): Promise<{ ok: boolean; error?: string }> {
   const { error } = await supabase.rpc("ensure_user_profile");
   if (error) {
-    return { ok: false, error: error.message };
+    console.error("ensure_user_profile failed:", error.message);
+    return {
+      ok: false,
+      error: "Could not set up your profile. Try signing in again.",
+    };
   }
   return { ok: true };
 }

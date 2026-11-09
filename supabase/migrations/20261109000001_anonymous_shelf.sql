@@ -1,4 +1,10 @@
--- Anonymous personal shelf (no login required)
+-- =============================================================================
+-- DEV ONLY — DO NOT LEAVE ON A PUBLIC / GITHUB PAGES DEPLOY
+-- =============================================================================
+-- Anonymous personal shelf (no login required). Opens RLS so anon can
+-- read/write all shelf rows. After local experiments, run
+-- 20261109000002_restore_auth_rls.sql before any public URL.
+-- =============================================================================
 -- Paste into: https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/sql/new
 -- Run AFTER 20261109000000_init.sql
 --

@@ -25,9 +25,8 @@ export function GoogleLoginButton({ nextPath = "/dashboard/" }: { nextPath?: str
 
     if (oauthError || !data.url) {
       setLoading(false);
-      setError(
-        "Could not start Google sign-in. Enable Google in Supabase Auth → Providers and add your Google Cloud Client ID/Secret.",
-      );
+      console.error("Google OAuth start failed:", oauthError?.message);
+      setError("Could not start Google sign-in. Try again in a moment.");
       return;
     }
 

@@ -13,8 +13,12 @@ npm audit --audit-level=high || {
 echo "==> eslint"
 npm run lint
 
-echo "==> production / GHP build"
-npm run build:ghp
+if [[ "${SKIP_BUILD:-}" == "1" ]]; then
+  echo "==> skipping production build (SKIP_BUILD=1; CI runs build separately)"
+else
+  echo "==> production / GHP build"
+  npm run build:ghp
+fi
 
 echo "==> secret / XSS pattern scan in src"
 if grep -RInE 'service_role|sb_secret_|whsec_|eyJhbGci|dangerouslySetInnerHTML' src 2>/dev/null; then
