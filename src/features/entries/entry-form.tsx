@@ -9,9 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CoverPicker } from "@/features/entries/cover-picker";
+import { StillsPicker } from "@/features/entries/stills-picker";
 import {
+  addEntryStills,
   createEntry,
+  removeEntryBackdrop,
   removeEntryCover,
+  setEntryBackdrop,
   setEntryCover,
   updateEntry,
 } from "@/features/entries/data";
@@ -39,6 +43,8 @@ type EntryFormProps = {
   initial?: Partial<EntryFormValues> & {
     tags_text?: string;
     cover_url?: string | null;
+    backdrop_url?: string | null;
+    stills_count?: number;
   };
 };
 
@@ -93,6 +99,12 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
   );
   const [coverHint, setCoverHint] = useState<string | null>(null);
   const [removeExistingCover, setRemoveExistingCover] = useState(false);
+  const [backdropFile, setBackdropFile] = useState<File | null>(null);
+  const [backdropPreview, setBackdropPreview] = useState<string | null>(
+    initial?.backdrop_url ?? null,
+  );
+  const [removeExistingBackdrop, setRemoveExistingBackdrop] = useState(false);
+  const [stillFiles, setStillFiles] = useState<File[]>([]);
 
   const mediaType = String(values.media_type) as EntryFormValues["media_type"];
   const format = String(values.consumption_format) as ConsumptionFormat;
@@ -198,12 +210,37 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
       if (id && removeExistingCover && !coverFile) {
         await removeEntryCover(id);
       }
+      if (id && removeExistingBackdrop && !backdropFile) {
+        await removeEntryBackdrop(id);
+      }
 
       if (id && coverFile) {
         const coverResult = await setEntryCover(id, coverFile);
         if (!coverResult.ok) {
           setError(
-            `Saved, but cover upload failed: ${coverResult.error}. You can retry from Edit.`,
+            `Saved, but poster upload failed: ${coverResult.error}. You can retry from Edit.`,
+          );
+          router.push(`/entries/view/?id=${id}`);
+          return;
+        }
+      }
+
+      if (id && backdropFile) {
+        const backdropResult = await setEntryBackdrop(id, backdropFile);
+        if (!backdropResult.ok) {
+          setError(
+            `Saved, but backdrop upload failed: ${backdropResult.error}. You can retry from Edit.`,
+          );
+          router.push(`/entries/view/?id=${id}`);
+          return;
+        }
+      }
+
+      if (id && stillFiles.length > 0) {
+        const stillsResult = await addEntryStills(id, stillFiles);
+        if (!stillsResult.ok) {
+          setError(
+            `Saved, but some stills failed: ${stillsResult.error}. You can retry from Edit.`,
           );
           router.push(`/entries/view/?id=${id}`);
           return;
@@ -229,39 +266,82 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
         </div>
       ) : null}
 
-      <section className="border-border space-y-4 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10">
+      <section className="border-border space-y-6 rounded-2xl border bg-card/40 p-5 shadow-lg shadow-black/10">
         <h2 className="text-sm font-medium tracking-wide uppercase opacity-80">
-          Cover
+          Images
         </h2>
-        <CoverPicker
-          previewUrl={
-            coverFile
-              ? coverPreview
-              : removeExistingCover
-                ? null
-                : coverPreview
-          }
-          invalid={Boolean(fieldErrors.cover)}
-          hint={coverHint}
-          disabled={pending}
-          onFile={(file) => {
-            setCoverFile(file);
-            setCoverHint(null);
-            clearError("cover");
-            if (file) {
-              setRemoveExistingCover(false);
-              const url = URL.createObjectURL(file);
-              setCoverPreview(url);
-            } else if (!removeExistingCover && initial?.cover_url) {
-              setCoverPreview(initial.cover_url);
-            } else {
-              setCoverPreview(null);
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Poster (2:3)</p>
+          <CoverPicker
+            aspect="poster"
+            title="Add a poster"
+            description="Shown on cards and as the small cover on the entry page. JPEG, PNG, or WebP up to 5 MB."
+            previewUrl={
+              coverFile
+                ? coverPreview
+                : removeExistingCover
+                  ? null
+                  : coverPreview
             }
-          }}
-          onClearLocal={() => {
-            setRemoveExistingCover(true);
-            setCoverPreview(null);
-          }}
+            invalid={Boolean(fieldErrors.cover)}
+            hint={coverHint}
+            disabled={pending}
+            onFile={(file) => {
+              setCoverFile(file);
+              setCoverHint(null);
+              clearError("cover");
+              if (file) {
+                setRemoveExistingCover(false);
+                const url = URL.createObjectURL(file);
+                setCoverPreview(url);
+              } else if (!removeExistingCover && initial?.cover_url) {
+                setCoverPreview(initial.cover_url);
+              } else {
+                setCoverPreview(null);
+              }
+            }}
+            onClearLocal={() => {
+              setRemoveExistingCover(true);
+              setCoverPreview(null);
+            }}
+          />
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Hero backdrop (16:9, optional)</p>
+          <CoverPicker
+            aspect="backdrop"
+            title="Add a wide hero image"
+            description="Used behind the title on the entry page. Falls back to the poster if empty."
+            previewUrl={
+              backdropFile
+                ? backdropPreview
+                : removeExistingBackdrop
+                  ? null
+                  : backdropPreview
+            }
+            disabled={pending}
+            onFile={(file) => {
+              setBackdropFile(file);
+              if (file) {
+                setRemoveExistingBackdrop(false);
+                setBackdropPreview(URL.createObjectURL(file));
+              } else if (!removeExistingBackdrop && initial?.backdrop_url) {
+                setBackdropPreview(initial.backdrop_url);
+              } else {
+                setBackdropPreview(null);
+              }
+            }}
+            onClearLocal={() => {
+              setRemoveExistingBackdrop(true);
+              setBackdropPreview(null);
+            }}
+          />
+        </div>
+        <StillsPicker
+          files={stillFiles}
+          onChange={setStillFiles}
+          existingCount={initial?.stills_count ?? 0}
+          disabled={pending}
         />
       </section>
 
@@ -627,5 +707,6 @@ export function entryToFormInitial(
     has_spoilers: entry.has_spoilers,
     tags_text: tags.join(", "),
     cover_url: entry.cover_url,
+    backdrop_url: entry.backdrop_url,
   };
 }

@@ -34,8 +34,9 @@ NEXT_PUBLIC_BASE_PATH=
 2. [`supabase/migrations/20261109000002_restore_auth_rls.sql`](supabase/migrations/20261109000002_restore_auth_rls.sql) — **required** (owner RLS; replaces anonymous open policies)
 3. [`supabase/migrations/20261109000003_ensure_user_profile.sql`](supabase/migrations/20261109000003_ensure_user_profile.sql) — **required** (backfill `public.users` / `user_settings`, `ensure_user_profile` RPC)
 4. [`supabase/migrations/20261109000004_progress_format.sql`](supabase/migrations/20261109000004_progress_format.sql) — progress unit, digital/physical format, volume fields
+5. [`supabase/migrations/20261109000005_image_roles.sql`](supabase/migrations/20261109000005_image_roles.sql) — poster / backdrop / still roles + `backdrop_image_id`
 
-If you previously ran `00001_anonymous_shelf.sql`, still run `00002` then `00003` (and `00004`) before public deploy.
+If you previously ran `00001_anonymous_shelf.sql`, still run `00002` then `00003` (and `00004` / `00005`) before public deploy.
 
 Profiles are created by a trigger on **new** `auth.users` rows and by the app calling `ensure_user_profile` after sign-in. If Auth shows a user but Table Editor → `public.users` does not, run migration `00003`.
 

@@ -104,6 +104,7 @@ Reviews render as plain text (no `dangerouslySetInnerHTML`).
 3. **Required for public GHP:** `20261109000002_restore_auth_rls.sql`
 4. **Required for profiles:** `20261109000003_ensure_user_profile.sql` (backfill + `ensure_user_profile` RPC)
 5. Progress format: `20261109000004_progress_format.sql` (unit, digital/physical, volumes)
+6. Image roles: `20261109000005_image_roles.sql` (poster / backdrop / still + `backdrop_image_id`)
 
 ## Safety script (not full VAPT)
 

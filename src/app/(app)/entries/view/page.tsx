@@ -11,8 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getEntry, getEntryTags } from "@/features/entries/data";
+import {
+  getEntry,
+  getEntryTags,
+  listEntryImages,
+  type EntryImage,
+} from "@/features/entries/data";
 import { DeleteEntryButton } from "@/features/entries/delete-entry-button";
+import { EntryGallery } from "@/features/entries/entry-gallery";
 import { ProgressControls } from "@/features/entries/progress-controls";
 import {
   CONSUMPTION_FORMAT_LABELS,
@@ -37,6 +43,7 @@ function EntryViewContent() {
   const id = searchParams.get("id") || "";
   const [entry, setEntry] = useState<MediaEntry | null>(null);
   const [tags, setTags] = useState<string[]>([]);
+  const [stills, setStills] = useState<EntryImage[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,13 +52,19 @@ function EntryViewContent() {
       setLoading(true);
       if (!id) {
         setEntry(null);
+        setStills([]);
         setLoading(false);
         return;
       }
-      const [e, t] = await Promise.all([getEntry(id), getEntryTags(id)]);
+      const [e, t, images] = await Promise.all([
+        getEntry(id),
+        getEntryTags(id),
+        listEntryImages(id),
+      ]);
       if (cancelled) return;
       setEntry(e);
       setTags(t);
+      setStills(images.filter((img) => img.role === "still"));
       setLoading(false);
     }
     void load();
@@ -76,40 +89,46 @@ function EntryViewContent() {
   }
 
   const format = entry.consumption_format ?? "digital";
+  const heroUrl = entry.backdrop_url ?? entry.cover_url;
+  const posterUrl = entry.cover_url;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      {/* Cinematic hero */}
+      {/* Cinematic hero — backdrop (or poster fallback) as wide image */}
       <section
         className={`relative min-h-[340px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/50 md:min-h-[400px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
       >
-        {entry.cover_url ? (
+        {heroUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={entry.cover_url}
+            src={heroUrl}
             alt=""
-            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-3xl"
+            className={`absolute inset-0 h-full w-full object-cover ${
+              entry.backdrop_url
+                ? "opacity-70"
+                : "scale-110 opacity-35 blur-3xl"
+            }`}
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/25" />
 
         <div className="relative z-10 flex h-full min-h-[340px] flex-col justify-end gap-6 p-6 pb-8 md:min-h-[400px] md:flex-row md:items-end md:gap-8 md:p-10">
           <div className="shrink-0">
-            {entry.cover_url ? (
+            {posterUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={entry.cover_url}
+                src={posterUrl}
                 alt=""
                 className="w-28 rounded-2xl object-cover shadow-2xl shadow-black/60 ring-1 ring-white/15 md:w-44"
               />
             ) : (
               <div className="bg-card/60 flex w-28 flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 p-4 text-center shadow-2xl md:w-44 md:min-h-[260px]">
-                <p className="text-sm font-medium text-white/90">No cover yet</p>
+                <p className="text-sm font-medium text-white/90">No poster yet</p>
                 <Link
                   href={`/entries/edit/?id=${entry.id}`}
                   className="bg-background/80 hover:bg-background rounded-lg px-3 py-1.5 text-xs font-medium backdrop-blur"
                 >
-                  Upload cover
+                  Upload poster
                 </Link>
               </div>
             )}
@@ -176,6 +195,8 @@ function EntryViewContent() {
               </CardContent>
             </Card>
           ) : null}
+
+          <EntryGallery stills={stills} />
 
           {entry.verdict ? (
             <Card className="border-white/10 bg-card/60">

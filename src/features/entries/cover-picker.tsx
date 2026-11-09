@@ -13,6 +13,9 @@ export function CoverPicker({
   invalid,
   hint,
   disabled,
+  aspect = "poster",
+  title = "Add a cover poster",
+  description = "Recommended — JPEG, PNG, or WebP up to 5 MB. Drop a file or click to browse.",
 }: {
   previewUrl: string | null;
   onFile: (file: File | null) => void;
@@ -20,6 +23,9 @@ export function CoverPicker({
   invalid?: boolean;
   hint?: string | null;
   disabled?: boolean;
+  aspect?: "poster" | "backdrop";
+  title?: string;
+  description?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -65,7 +71,8 @@ export function CoverPicker({
           accept(file);
         }}
         className={cn(
-          "border-border relative flex min-h-44 cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed bg-card/40 p-4 transition-colors",
+          "border-border relative flex cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed bg-card/40 p-4 transition-colors",
+          aspect === "backdrop" ? "min-h-36 aspect-[16/9]" : "min-h-44 aspect-[2/3] max-w-xs",
           dragOver && "border-primary bg-primary/10",
           invalid && "border-destructive ring-3 ring-destructive/25",
           disabled && "pointer-events-none opacity-50",
@@ -75,16 +82,13 @@ export function CoverPicker({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={previewUrl}
-            alt="Cover preview"
+            alt=""
             className="absolute inset-0 h-full w-full object-cover opacity-40"
           />
         ) : null}
         <div className="relative z-10 flex flex-col items-center gap-2 text-center">
-          <p className="text-sm font-semibold">Add a cover poster</p>
-          <p className="text-muted-foreground max-w-xs text-xs">
-            Recommended — JPEG, PNG, or WebP up to 5 MB. Drop a file or click to
-            browse.
-          </p>
+          <p className="text-sm font-semibold">{title}</p>
+          <p className="text-muted-foreground max-w-xs text-xs">{description}</p>
           <Button type="button" size="sm" variant="secondary" disabled={disabled}>
             Choose image
           </Button>
@@ -104,7 +108,10 @@ export function CoverPicker({
           <img
             src={previewUrl}
             alt=""
-            className="border-border h-24 w-16 rounded-lg border object-cover shadow-md"
+            className={cn(
+              "border-border rounded-lg border object-cover shadow-md",
+              aspect === "backdrop" ? "h-16 w-28" : "h-24 w-16",
+            )}
           />
           <Button
             type="button"

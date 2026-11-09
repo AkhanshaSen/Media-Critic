@@ -1,4 +1,6 @@
 import {
+  fetchBackdropPathForEntry,
+  fetchCoverPathForEntry,
   fetchCoverPathsForEntries,
   signCoverUrl,
   signCoverUrls,
@@ -39,7 +41,10 @@ async function requireUserId(): Promise<string | null> {
 }
 
 function normalizeEntry(
-  row: MediaEntry & { cover_image_id?: string | null },
+  row: MediaEntry & {
+    cover_image_id?: string | null;
+    backdrop_image_id?: string | null;
+  },
 ): MediaEntry {
   return {
     ...row,
@@ -51,8 +56,11 @@ function normalizeEntry(
     finished_on: row.finished_on ?? null,
     synopsis: row.synopsis ?? null,
     cover_image_id: row.cover_image_id ?? null,
+    backdrop_image_id: row.backdrop_image_id ?? null,
     cover_path: row.cover_path ?? null,
     cover_url: row.cover_url ?? null,
+    backdrop_path: row.backdrop_path ?? null,
+    backdrop_url: row.backdrop_url ?? null,
   };
 }
 
@@ -225,10 +233,19 @@ export async function getEntry(id: string): Promise<MediaEntry | null> {
     .maybeSingle();
 
   if (error || !data) return null;
-  const [withCover] = await attachCovers([
-    normalizeEntry(data as MediaEntry),
+  const entry = normalizeEntry(data as MediaEntry);
+  const [coverPath, backdropPath] = await Promise.all([
+    fetchCoverPathForEntry(id),
+    fetchBackdropPathForEntry(id),
   ]);
-  return withCover;
+  const urls = await signCoverUrls(
+    [coverPath, backdropPath].filter((p): p is string => Boolean(p)),
+  );
+  entry.cover_path = coverPath;
+  entry.cover_url = coverPath ? (urls[coverPath] ?? null) : null;
+  entry.backdrop_path = backdropPath;
+  entry.backdrop_url = backdropPath ? (urls[backdropPath] ?? null) : null;
+  return entry;
 }
 
 export async function getEntryTags(entryId: string): Promise<string[]> {
@@ -370,6 +387,11 @@ export async function bumpProgress(
     entry.cover_url =
       current.cover_url ?? (await signCoverUrl(current.cover_path));
   }
+  if (current.backdrop_path) {
+    entry.backdrop_path = current.backdrop_path;
+    entry.backdrop_url =
+      current.backdrop_url ?? (await signCoverUrl(current.backdrop_path));
+  }
   return {
     ok: true,
     data: { entry, justCompleted },
@@ -377,8 +399,16 @@ export async function bumpProgress(
 }
 
 export {
+  addEntryStills,
+  listEntryImages,
+  MAX_STILLS,
+  removeEntryBackdrop,
   removeEntryCover,
+  removeEntryImage,
+  setEntryBackdrop,
   setEntryCover,
   validateCoverFile,
 } from "@/features/entries/cover-image";
+
+export type { EntryImage } from "@/features/entries/cover-image";
 

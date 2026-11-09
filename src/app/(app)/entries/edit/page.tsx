@@ -5,7 +5,11 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { getEntry, getEntryTags } from "@/features/entries/data";
+import {
+  getEntry,
+  getEntryTags,
+  listEntryImages,
+} from "@/features/entries/data";
 import {
   EntryForm,
   entryToFormInitial,
@@ -27,6 +31,7 @@ function EditContent() {
   const id = searchParams.get("id") || "";
   const [entry, setEntry] = useState<MediaEntry | null>(null);
   const [tags, setTags] = useState<string[]>([]);
+  const [stillsCount, setStillsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,10 +43,15 @@ function EditContent() {
         setLoading(false);
         return;
       }
-      const [e, t] = await Promise.all([getEntry(id), getEntryTags(id)]);
+      const [e, t, images] = await Promise.all([
+        getEntry(id),
+        getEntryTags(id),
+        listEntryImages(id),
+      ]);
       if (cancelled) return;
       setEntry(e);
       setTags(t);
+      setStillsCount(images.filter((img) => img.role === "still").length);
       setLoading(false);
     }
     void load();
@@ -71,7 +81,10 @@ function EditContent() {
       <EntryForm
         mode="edit"
         entryId={entry.id}
-        initial={entryToFormInitial(entry, tags)}
+        initial={{
+          ...entryToFormInitial(entry, tags),
+          stills_count: stillsCount,
+        }}
       />
     </div>
   );
