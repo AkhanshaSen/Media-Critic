@@ -21,7 +21,7 @@ import {
   ShareCardPreview,
   buildShareCaption,
   buildShareLink,
-  shareEntryCard,
+  shareEntryBundle,
   type SharePreviewTheme,
 } from "@/features/entries/share-cards";
 import {
@@ -116,7 +116,7 @@ export function ShareStudioDialog({
     }
   }
 
-  async function shareCard() {
+  async function shareBundle() {
     setBusy(true);
     setError(null);
     const blob = await captureBlob();
@@ -126,7 +126,7 @@ export function ShareStudioDialog({
       toast({ title: "Could not render share image" });
       return;
     }
-    const result = await shareEntryCard(entry, blob, {
+    const result = await shareEntryBundle(entry, blob, {
       includeShelfAverage: showShelfAvg,
       shelfAverage,
     });
@@ -140,9 +140,11 @@ export function ShareStudioDialog({
               ? "Image saved"
               : "Copied",
         description:
-          result.method === "download"
-            ? "Caption copied; PNG downloaded."
-            : undefined,
+          result.method === "share"
+            ? "Link, caption, and card image."
+            : result.method === "download"
+              ? "Caption copied; image saved — attach it if your app needs a file."
+              : undefined,
       });
       return;
     }
@@ -164,7 +166,8 @@ export function ShareStudioDialog({
           <div className="min-w-0 space-y-0.5">
             <DialogTitle>Share</DialogTitle>
             <DialogDescription>
-              Pick a brief share card, then copy a link or share image + caption.
+              Pick a card, then Share… to send your link, caption, and image
+              together. Copy link is URL only.
             </DialogDescription>
           </div>
           <DialogClose />
@@ -249,31 +252,42 @@ export function ShareStudioDialog({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2">
             <button
               type="button"
               disabled={busy}
-              onClick={() => void copyLink()}
-              className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
+              onClick={() => void shareBundle()}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-11 w-full items-center justify-center rounded-lg px-3 text-sm font-semibold sm:w-auto sm:self-start"
             >
-              Copy link
+              {busy ? "Working…" : "Share…"}
             </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void copyCaption()}
-              className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
-            >
-              Copy caption
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void shareCard()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-11 items-center rounded-lg px-3 text-xs font-semibold"
-            >
-              {busy ? "Working…" : "Share image…"}
-            </button>
+            <p className="text-muted-foreground text-[11px]">
+              Opens the system share sheet with your entry link, caption, and
+              card image.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void copyLink()}
+                title="Copies the entry URL only. Use Share… to include the image."
+                className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
+              >
+                Copy link
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void copyCaption()}
+                className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
+              >
+                Copy caption
+              </button>
+            </div>
+            <p className="text-muted-foreground text-[11px]">
+              Copy link is URL only — use Share… when you want the image
+              attached.
+            </p>
           </div>
 
           {error ? <p className="text-destructive text-xs">{error}</p> : null}

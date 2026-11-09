@@ -364,8 +364,12 @@ export async function shareEntryReview(
   }
 }
 
-/** Share a brief PNG card + caption/link when the browser supports file share. */
-export async function shareEntryCard(
+/**
+ * System share sheet with caption (includes URL) + PNG when possible.
+ * Omits the separate `url` field when sharing files — macOS/Safari often
+ * mishandles url+files together; the link stays in the caption text.
+ */
+export async function shareEntryBundle(
   entry: MediaEntry,
   blob: Blob,
   options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
@@ -376,23 +380,51 @@ export async function shareEntryCard(
     type: "image/png",
   });
 
-  if (
+  const canShare =
     typeof navigator !== "undefined" &&
-    typeof navigator.share === "function" &&
-    typeof navigator.canShare === "function" &&
-    navigator.canShare({ files: [file] })
-  ) {
-    try {
-      await navigator.share({
-        title: entry.title,
-        text: caption,
-        url,
-        files: [file],
-      });
-      return { ok: true, method: "share" };
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        return { ok: false, error: "Share cancelled.", aborted: true };
+    typeof navigator.share === "function";
+  const canShareData =
+    canShare && typeof navigator.canShare === "function"
+      ? (data: ShareData) => {
+          try {
+            return navigator.canShare(data);
+          } catch {
+            return false;
+          }
+        }
+      : null;
+
+  if (canShare) {
+    const withFiles: ShareData = {
+      title: entry.title,
+      text: caption,
+      files: [file],
+    };
+    const filesOnly: ShareData = {
+      title: entry.title,
+      text: entry.title,
+      files: [file],
+    };
+    const textOnly: ShareData = {
+      title: entry.title,
+      text: caption,
+      url,
+    };
+
+    const attempts: ShareData[] = [];
+    if (!canShareData || canShareData(withFiles)) attempts.push(withFiles);
+    else if (!canShareData || canShareData(filesOnly)) attempts.push(filesOnly);
+    if (!canShareData || canShareData(textOnly)) attempts.push(textOnly);
+
+    for (const data of attempts) {
+      try {
+        await navigator.share(data);
+        return { ok: true, method: "share" };
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return { ok: false, error: "Share cancelled.", aborted: true };
+        }
+        // Try next payload.
       }
     }
   }
@@ -409,9 +441,18 @@ export async function shareEntryCard(
   } catch {
     return {
       ok: false,
-      error: "Could not share image. Try Copy caption instead.",
+      error: "Could not share. Try Copy link or Copy caption instead.",
     };
   }
+}
+
+/** @deprecated Prefer shareEntryBundle */
+export async function shareEntryCard(
+  entry: MediaEntry,
+  blob: Blob,
+  options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
+): Promise<ShareEntryResult> {
+  return shareEntryBundle(entry, blob, options);
 }
 
 function slugify(title: string): string {
