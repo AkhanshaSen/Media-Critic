@@ -41,11 +41,11 @@ export function ContinueRail({
         {entries.map((entry) => (
           <div
             key={entry.id}
-            className="border-border/80 bg-card/50 w-[min(100%,320px)] shrink-0 overflow-hidden rounded-2xl border shadow-lg shadow-black/20"
+            className="border-border/80 bg-card/50 w-[min(100%,220px)] shrink-0 overflow-hidden rounded-xl border shadow-md shadow-black/20"
           >
             <Link
               href={`/entries/view/?id=${entry.id}`}
-              className={`relative block aspect-[16/10] overflow-hidden bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+              className={`relative block aspect-[16/9] overflow-hidden bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
             >
               {entry.cover_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -56,16 +56,16 @@ export function ContinueRail({
                 />
               ) : null}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-3">
+              <div className="absolute inset-x-0 bottom-0 p-2">
                 <p className="text-[10px] font-medium tracking-wide text-white/80 uppercase">
                   {MEDIA_TYPE_LABELS[entry.media_type]}
                 </p>
-                <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-white">
+                <h3 className="mt-0.5 line-clamp-2 text-xs font-semibold leading-snug text-white">
                   {entry.title}
                 </h3>
               </div>
             </Link>
-            <div className="p-3">
+            <div className="p-2">
               <ProgressControls
                 entry={entry}
                 compact

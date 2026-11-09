@@ -6,6 +6,7 @@ import {
   type MediaEntry,
   type ShareTemplate,
 } from "@/features/entries/schema";
+import { appPath, getSiteUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export type SharePreviewTheme = "dark" | "light";
@@ -194,10 +195,8 @@ function PosterScoreCard({
         <img
           src={entry.cover_url}
           alt=""
-          className={cn(
-            "absolute inset-0 h-full w-full object-cover",
-            light ? "opacity-40" : "opacity-50",
-          )}
+          crossOrigin="anonymous"
+          className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
         <div
@@ -213,8 +212,8 @@ function PosterScoreCard({
         className={cn(
           "relative z-10 flex w-full flex-col gap-1.5 p-3",
           light
-            ? "bg-gradient-to-t from-white via-white/80 to-transparent"
-            : "bg-gradient-to-t from-black via-black/70 to-transparent",
+            ? "bg-gradient-to-t from-white/95 via-white/55 to-transparent"
+            : "bg-gradient-to-t from-black/90 via-black/45 to-transparent",
         )}
       >
         <div className="flex items-end justify-between gap-2">
@@ -295,6 +294,27 @@ function VerdictQuoteCard({
   );
 }
 
+export function buildShareLink(entryId: string): string {
+  return `${getSiteUrl()}${appPath("/entries/view/")}?id=${encodeURIComponent(entryId)}`;
+}
+
+export function buildShareCaption(
+  entry: MediaEntry,
+  options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
+): string {
+  const url = buildShareLink(entry.id);
+  const parts = [
+    entry.title,
+    entry.rating != null ? `Score: ${entry.rating}/10` : null,
+    options?.includeShelfAverage && options.shelfAverage != null
+      ? `Shelf avg: ${options.shelfAverage}/10`
+      : null,
+    entry.verdict ? entry.verdict.slice(0, 120) : null,
+    url,
+  ].filter(Boolean);
+  return parts.join("\n");
+}
+
 export function buildShareText(
   entry: MediaEntry,
   options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
@@ -307,13 +327,14 @@ export function buildShareText(
       : null,
     entry.verdict ? `Verdict: ${entry.verdict}` : null,
     entry.review_body ? entry.review_body.slice(0, 400) : null,
+    buildShareLink(entry.id),
     "— via Media Critic",
   ].filter(Boolean);
   return parts.join("\n");
 }
 
 export type ShareEntryResult =
-  | { ok: true; method: "share" | "clipboard" }
+  | { ok: true; method: "share" | "clipboard" | "download" }
   | { ok: false; error: string; aborted?: boolean };
 
 /** Native share sheet when available; otherwise copy review text to clipboard. */
@@ -322,16 +343,16 @@ export async function shareEntryReview(
   options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
 ): Promise<ShareEntryResult> {
   const text = buildShareText(entry, options);
+  const url = buildShareLink(entry.id);
 
   if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
     try {
-      await navigator.share({ title: entry.title, text });
+      await navigator.share({ title: entry.title, text, url });
       return { ok: true, method: "share" };
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         return { ok: false, error: "Share cancelled.", aborted: true };
       }
-      // Fall through to clipboard if share failed for other reasons.
     }
   }
 
@@ -341,4 +362,64 @@ export async function shareEntryReview(
   } catch {
     return { ok: false, error: "Could not copy. Try again." };
   }
+}
+
+/** Share a brief PNG card + caption/link when the browser supports file share. */
+export async function shareEntryCard(
+  entry: MediaEntry,
+  blob: Blob,
+  options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
+): Promise<ShareEntryResult> {
+  const caption = buildShareCaption(entry, options);
+  const url = buildShareLink(entry.id);
+  const file = new File([blob], `${slugify(entry.title)}-media-critic.png`, {
+    type: "image/png",
+  });
+
+  if (
+    typeof navigator !== "undefined" &&
+    typeof navigator.share === "function" &&
+    typeof navigator.canShare === "function" &&
+    navigator.canShare({ files: [file] })
+  ) {
+    try {
+      await navigator.share({
+        title: entry.title,
+        text: caption,
+        url,
+        files: [file],
+      });
+      return { ok: true, method: "share" };
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return { ok: false, error: "Share cancelled.", aborted: true };
+      }
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(caption);
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(objectUrl);
+    return { ok: true, method: "download" };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not share image. Try Copy caption instead.",
+    };
+  }
+}
+
+function slugify(title: string): string {
+  return (
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40) || "share"
+  );
 }

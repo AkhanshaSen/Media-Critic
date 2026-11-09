@@ -12,14 +12,76 @@ import {
   formatProgress,
   type MediaEntry,
 } from "@/features/entries/schema";
+import { cn } from "@/lib/utils";
 
-export function EntryCard({ entry }: { entry: MediaEntry }) {
+export function EntryCard({
+  entry,
+  variant = "poster",
+}: {
+  entry: MediaEntry;
+  variant?: "poster" | "compact";
+}) {
   const format = entry.consumption_format ?? "digital";
+
+  if (variant === "compact") {
+    return (
+      <Link
+        href={`/entries/view/?id=${entry.id}`}
+        className="border-border/80 bg-card/40 hover:border-amber-400/40 flex gap-3 overflow-hidden rounded-xl border p-2 shadow-md shadow-black/20 transition-colors"
+      >
+        <div
+          className={cn(
+            "relative aspect-[2/3] w-[4.5rem] shrink-0 overflow-hidden rounded-lg bg-gradient-to-br",
+            MEDIA_TYPE_GRADIENT[entry.media_type],
+          )}
+        >
+          {entry.cover_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={entry.cover_url}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : null}
+        </div>
+        <div className="min-w-0 flex-1 space-y-1.5 py-0.5">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="line-clamp-1 text-sm font-semibold tracking-tight">
+              {entry.title}
+            </h3>
+            {entry.rating != null ? (
+              <span className="shrink-0">
+                <RatingStars
+                  value={entry.rating}
+                  size="sm"
+                  variant="dark"
+                  showValue
+                />
+              </span>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap gap-1 text-[10px] tracking-wide uppercase">
+            <MediaTypeBadge type={entry.media_type} />
+            <span className="bg-muted text-muted-foreground rounded-md px-1.5 py-0.5">
+              {STATUS_LABELS[entry.status]}
+            </span>
+            <span className="bg-muted text-muted-foreground rounded-md px-1.5 py-0.5">
+              {CONSUMPTION_FORMAT_LABELS[format]}
+            </span>
+          </div>
+          <p className="text-muted-foreground text-[11px] tabular-nums">
+            {formatProgress(entry)}
+          </p>
+          <ProgressBar entry={entry} />
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link
       href={`/entries/view/?id=${entry.id}`}
-      className="group border-border/80 bg-card/40 hover:border-amber-400/40 relative block overflow-hidden rounded-2xl border shadow-lg shadow-black/30 transition-all hover:-translate-y-1 hover:shadow-amber-500/20"
+      className="group border-border/80 bg-card/40 hover:border-amber-400/40 relative block overflow-hidden rounded-xl border shadow-lg shadow-black/30 transition-all hover:-translate-y-0.5 hover:shadow-amber-500/20"
     >
       <div
         className={`relative aspect-[2/3] overflow-hidden bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
@@ -33,13 +95,13 @@ export function EntryCard({ entry }: { entry: MediaEntry }) {
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-        <div className="absolute top-3 right-3 left-3 flex items-start justify-between gap-2">
+        <div className="absolute top-2 right-2 left-2 flex items-start justify-between gap-2">
           <MediaTypeBadge
             type={entry.media_type}
             className="bg-background/80 backdrop-blur"
           />
           {entry.rating != null ? (
-            <span className="rounded-xl bg-amber-400 px-2 py-1 shadow-md">
+            <span className="rounded-lg bg-amber-400 px-1.5 py-0.5 shadow-md">
               <RatingStars
                 value={entry.rating}
                 size="sm"
@@ -49,11 +111,11 @@ export function EntryCard({ entry }: { entry: MediaEntry }) {
             </span>
           ) : null}
         </div>
-        <div className="absolute inset-x-0 bottom-0 space-y-2 p-3">
-          <h3 className="line-clamp-2 text-base leading-snug font-semibold text-white drop-shadow">
+        <div className="absolute inset-x-0 bottom-0 space-y-1.5 p-2.5">
+          <h3 className="line-clamp-2 text-sm leading-snug font-semibold text-white drop-shadow">
             {entry.title}
           </h3>
-          <div className="flex flex-wrap gap-1.5 text-[10px] tracking-wide text-white/80 uppercase">
+          <div className="flex flex-wrap gap-1 text-[10px] tracking-wide text-white/80 uppercase">
             <span className="rounded-md bg-white/15 px-1.5 py-0.5 backdrop-blur">
               {STATUS_LABELS[entry.status]}
             </span>
@@ -75,7 +137,7 @@ export function EntryCard({ entry }: { entry: MediaEntry }) {
         </div>
       </div>
       {entry.verdict ? (
-        <p className="line-clamp-2 border-t border-white/10 px-3 py-2.5 text-sm text-white/60 italic">
+        <p className="line-clamp-2 border-t border-white/10 px-2.5 py-2 text-xs text-white/60 italic">
           {entry.verdict}
         </p>
       ) : null}

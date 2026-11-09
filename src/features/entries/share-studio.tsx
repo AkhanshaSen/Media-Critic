@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toBlob } from "html-to-image";
 
 import {
   Dialog,
@@ -14,46 +15,41 @@ import {
 import { useToast } from "@/components/ui/toast";
 import {
   getShelfAverageRating,
-  updatePageTemplate,
   updateShareTemplate,
 } from "@/features/entries/data";
 import {
   ShareCardPreview,
-  shareEntryReview,
+  buildShareCaption,
+  buildShareLink,
+  shareEntryCard,
   type SharePreviewTheme,
 } from "@/features/entries/share-cards";
 import {
-  PAGE_TEMPLATES,
-  PAGE_TEMPLATE_LABELS,
   SHARE_TEMPLATES,
   type MediaEntry,
-  type PageTemplate,
   type ShareTemplate,
 } from "@/features/entries/schema";
 import { cn } from "@/lib/utils";
 
 export function ShareStudioDialog({
   entry,
-  pageTemplate,
   shareTemplate,
   open,
   onOpenChange,
-  onPageTemplate,
   onShareTemplate,
   watermarkEnabled = true,
   onWatermarkChange,
 }: {
   entry: MediaEntry;
-  pageTemplate: PageTemplate;
   shareTemplate: ShareTemplate;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onPageTemplate: (t: PageTemplate) => void;
   onShareTemplate: (t: ShareTemplate) => void;
   watermarkEnabled?: boolean;
   onWatermarkChange?: (enabled: boolean) => void;
 }) {
   const { toast } = useToast();
+  const exportRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewTheme, setPreviewTheme] = useState<SharePreviewTheme>("dark");
@@ -71,16 +67,6 @@ export function ShareStudioDialog({
     };
   }, [open, showShelfAvg]);
 
-  async function pickPage(t: PageTemplate) {
-    if (t === pageTemplate || busy) return;
-    setBusy(true);
-    setError(null);
-    onPageTemplate(t);
-    const result = await updatePageTemplate(entry.id, t);
-    if (!result.ok) setError(result.error);
-    setBusy(false);
-  }
-
   async function pickShare(t: ShareTemplate) {
     if (t === shareTemplate || busy) return;
     setBusy(true);
@@ -91,17 +77,71 @@ export function ShareStudioDialog({
     setBusy(false);
   }
 
-  async function copyText() {
-    const result = await shareEntryReview(entry, {
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(buildShareLink(entry.id));
+      toast({ title: "Link copied" });
+    } catch {
+      setError("Could not copy link.");
+      toast({ title: "Could not copy link" });
+    }
+  }
+
+  async function copyCaption() {
+    try {
+      await navigator.clipboard.writeText(
+        buildShareCaption(entry, {
+          includeShelfAverage: showShelfAvg,
+          shelfAverage,
+        }),
+      );
+      toast({ title: "Caption copied", description: "Includes the entry link." });
+    } catch {
+      setError("Could not copy caption.");
+      toast({ title: "Could not copy caption" });
+    }
+  }
+
+  async function captureBlob(): Promise<Blob | null> {
+    const node = exportRef.current;
+    if (!node) return null;
+    try {
+      return await toBlob(node, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: previewTheme === "light" ? "#f7f4ef" : "#0b0b0f",
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  async function shareCard() {
+    setBusy(true);
+    setError(null);
+    const blob = await captureBlob();
+    if (!blob) {
+      setBusy(false);
+      setError("Could not render share image.");
+      toast({ title: "Could not render share image" });
+      return;
+    }
+    const result = await shareEntryCard(entry, blob, {
       includeShelfAverage: showShelfAvg,
       shelfAverage,
     });
+    setBusy(false);
     if (result.ok) {
       toast({
-        title: result.method === "share" ? "Shared" : "Copied!",
+        title:
+          result.method === "share"
+            ? "Shared"
+            : result.method === "download"
+              ? "Image saved"
+              : "Copied",
         description:
-          result.method === "clipboard"
-            ? "Review text is on your clipboard."
+          result.method === "download"
+            ? "Caption copied; PNG downloaded."
             : undefined,
       });
       return;
@@ -122,10 +162,9 @@ export function ShareStudioDialog({
       <DialogContent sheet className="sm:max-w-xl">
         <DialogHeader>
           <div className="min-w-0 space-y-0.5">
-            <DialogTitle>Share Studio</DialogTitle>
+            <DialogTitle>Share</DialogTitle>
             <DialogDescription>
-              Copy your review, pick a share card, or change this title&apos;s
-              page layout.
+              Pick a brief share card, then copy a link or share image + caption.
             </DialogDescription>
           </div>
           <DialogClose />
@@ -170,40 +209,6 @@ export function ShareStudioDialog({
                 Watermark
               </label>
             ) : null}
-            <button
-              type="button"
-              onClick={() => void copyText()}
-              className="border-border hover:bg-muted ml-auto inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
-            >
-              Copy review text
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-[10px] font-semibold tracking-widest text-amber-700 uppercase dark:text-amber-300/90">
-              Page layout
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {PAGE_TEMPLATES.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void pickPage(t)}
-                  className={cn(
-                    "rounded-xl border p-2 text-left transition-all",
-                    pageTemplate === t
-                      ? "border-amber-400 bg-amber-400/10 ring-1 ring-amber-400/40"
-                      : "border-border hover:border-amber-400/40",
-                  )}
-                >
-                  <LayoutThumb kind={t} />
-                  <p className="mt-2 text-xs font-medium">
-                    {PAGE_TEMPLATE_LABELS[t]}
-                  </p>
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="space-y-2">
@@ -227,43 +232,53 @@ export function ShareStudioDialog({
             </div>
           </div>
 
+          {/* Off-screen export target for the selected card */}
+          <div
+            aria-hidden
+            className="pointer-events-none fixed top-0 left-[-9999px] z-[-1]"
+          >
+            <div ref={exportRef} className="w-[360px] overflow-hidden rounded-xl">
+              <ShareCardPreview
+                entry={entry}
+                template={shareTemplate}
+                theme={previewTheme}
+                showShelfAverage={showShelfAvg}
+                shelfAverage={shelfAverage}
+                watermark={watermarkEnabled}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void copyLink()}
+              className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
+            >
+              Copy link
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void copyCaption()}
+              className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-medium"
+            >
+              Copy caption
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void shareCard()}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-11 items-center rounded-lg px-3 text-xs font-semibold"
+            >
+              {busy ? "Working…" : "Share image…"}
+            </button>
+          </div>
+
           {error ? <p className="text-destructive text-xs">{error}</p> : null}
         </DialogBody>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function LayoutThumb({ kind }: { kind: PageTemplate }) {
-  if (kind === "magazine") {
-    return (
-      <div className="flex aspect-[16/10] gap-1 overflow-hidden rounded-lg bg-black/50 p-1.5">
-        <div className="w-1/3 rounded bg-amber-400/30" />
-        <div className="flex flex-1 flex-col gap-1">
-          <div className="h-2 w-4/5 rounded bg-white/40" />
-          <div className="h-1.5 w-full rounded bg-white/20" />
-          <div className="h-1.5 w-3/4 rounded bg-white/15" />
-        </div>
-      </div>
-    );
-  }
-  if (kind === "minimal") {
-    return (
-      <div className="flex aspect-[16/10] items-center gap-1.5 overflow-hidden rounded-lg bg-black/50 p-1.5">
-        <div className="h-full w-1/4 rounded bg-white/25" />
-        <div className="flex flex-1 flex-col gap-1">
-          <div className="h-2 w-2/3 rounded bg-white/35" />
-          <div className="h-1.5 w-1/2 rounded bg-amber-400/50" />
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-gradient-to-br from-amber-900/50 to-black">
-      <div className="absolute inset-x-0 bottom-0 space-y-1 bg-gradient-to-t from-black p-1.5">
-        <div className="h-2 w-3/4 rounded bg-white/50" />
-        <div className="h-1.5 w-1/3 rounded bg-amber-400/70" />
-      </div>
-    </div>
   );
 }

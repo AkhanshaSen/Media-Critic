@@ -5,7 +5,6 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/toast";
 import {
   getAlwaysShowSpoilers,
   getEntry,
@@ -19,7 +18,7 @@ import {
 } from "@/features/entries/data";
 import { EntryLayoutByTemplate } from "@/features/entries/entry-layouts";
 import { EntryPageChrome } from "@/features/entries/entry-page-chrome";
-import { shareEntryReview } from "@/features/entries/share-cards";
+import { PageLayoutPicker } from "@/features/entries/page-layout-picker";
 import { ShareStudioDialog } from "@/features/entries/share-studio";
 import type {
   MediaEntry,
@@ -47,7 +46,6 @@ function EntryViewContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
   const justAdded = searchParams.get("added") === "1";
-  const { toast } = useToast();
   const [entry, setEntry] = useState<MediaEntry | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [stills, setStills] = useState<EntryImage[]>([]);
@@ -109,23 +107,8 @@ function EntryViewContent() {
     };
   }, [accent]);
 
-  async function handleShare() {
-    if (!entry) return;
+  function handleShare() {
     setStudioOpen(true);
-    const result = await shareEntryReview(entry);
-    if (result.ok) {
-      toast({
-        title: result.method === "share" ? "Shared" : "Copied!",
-        description:
-          result.method === "clipboard"
-            ? "Review text is on your clipboard."
-            : undefined,
-      });
-      return;
-    }
-    if (!result.aborted) {
-      toast({ title: "Could not share", description: result.error });
-    }
   }
 
   if (loading) {
@@ -180,19 +163,23 @@ function EntryViewContent() {
 
       <ShareStudioDialog
         entry={entry}
-        pageTemplate={pageTemplate}
         shareTemplate={shareTemplate}
         open={studioOpen}
         onOpenChange={setStudioOpen}
-        onPageTemplate={(t) => {
-          setPageTemplate(t);
-          setEntry((prev) => (prev ? { ...prev, page_template: t } : prev));
-        }}
         onShareTemplate={setShareTemplate}
         watermarkEnabled={watermark}
         onWatermarkChange={(enabled) => {
           setWatermark(enabled);
           void updateWatermarkEnabled(enabled);
+        }}
+      />
+
+      <PageLayoutPicker
+        entryId={entry.id}
+        value={pageTemplate}
+        onChange={(t) => {
+          setPageTemplate(t);
+          setEntry((prev) => (prev ? { ...prev, page_template: t } : prev));
         }}
       />
 
