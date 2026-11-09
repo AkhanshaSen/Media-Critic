@@ -12,6 +12,7 @@ import {
   type EntryImage,
 } from "@/features/entries/data";
 import { EntryLayoutByTemplate } from "@/features/entries/entry-layouts";
+import { EntryPageChrome } from "@/features/entries/entry-page-chrome";
 import {
   TemplateExplorer,
   useLooksOpenState,
@@ -35,6 +36,7 @@ export default function EntryViewPage() {
 function EntryViewContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
+  const justAdded = searchParams.get("added") === "1";
   const [entry, setEntry] = useState<MediaEntry | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [stills, setStills] = useState<EntryImage[]>([]);
@@ -91,6 +93,14 @@ function EntryViewContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+      <EntryPageChrome
+        entry={entry}
+        notice={
+          justAdded ? "Added to your shelf — write your review anytime." : null
+        }
+        onShare={() => setLooksOpen(true)}
+      />
+
       <TemplateExplorer
         entry={entry}
         pageTemplate={pageTemplate}

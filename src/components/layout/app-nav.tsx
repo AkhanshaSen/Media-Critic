@@ -19,7 +19,7 @@ const navItems: {
   enabled: boolean;
   icon: LucideIcon;
 }[] = [
-  { href: "/dashboard/", label: "Home", enabled: true, icon: Home },
+  { href: "/dashboard/", label: "Shelf", enabled: true, icon: Home },
   { href: "/library/", label: "Library", enabled: true, icon: Library },
   { href: "/add/", label: "Add", enabled: true, icon: PlusCircle },
   { href: "/stats/", label: "Stats", enabled: false, icon: BarChart2 },
@@ -46,7 +46,7 @@ export function AppSidebar() {
           Media Critic
         </Link>
         <p className="text-muted-foreground relative mt-1 text-xs">
-          Your private shelf
+          Your reviews, one shelf
         </p>
         <div className="relative mt-4 h-px w-12 bg-gradient-to-r from-amber-400/80 to-transparent" />
       </div>
