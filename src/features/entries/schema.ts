@@ -115,6 +115,28 @@ export type EntryFormValues = z.infer<typeof entryFormSchema>;
 export type ProgressUnit = (typeof PROGRESS_UNITS)[number];
 export type ConsumptionFormat = (typeof CONSUMPTION_FORMATS)[number];
 
+export const PAGE_TEMPLATES = ["cinematic", "magazine", "minimal"] as const;
+export type PageTemplate = (typeof PAGE_TEMPLATES)[number];
+
+export const PAGE_TEMPLATE_LABELS: Record<PageTemplate, string> = {
+  cinematic: "Cinematic",
+  magazine: "Magazine",
+  minimal: "Minimal",
+};
+
+export const SHARE_TEMPLATES = [
+  "minimal_dark",
+  "poster_score",
+  "verdict_quote",
+] as const;
+export type ShareTemplate = (typeof SHARE_TEMPLATES)[number];
+
+export const SHARE_TEMPLATE_LABELS: Record<ShareTemplate, string> = {
+  minimal_dark: "Minimal dark",
+  poster_score: "Poster + score",
+  verdict_quote: "Verdict quote",
+};
+
 export type MediaEntry = {
   id: string;
   title: string;
@@ -136,6 +158,7 @@ export type MediaEntry = {
   review_body: string | null;
   verdict: string | null;
   has_spoilers: boolean;
+  page_template: PageTemplate;
   cover_image_id: string | null;
   backdrop_image_id: string | null;
   /** Storage path in entry-images bucket (when cover exists). */
@@ -373,4 +396,4 @@ export function parseTagsText(tagsText: string): string[] {
 }
 
 export const ENTRY_SELECT =
-  "id, title, original_title, media_type, year, status, progress_current, progress_total, progress_unit, consumption_format, volume_current, volume_total, started_on, finished_on, rating, synopsis, review_title, review_body, verdict, has_spoilers, cover_image_id, backdrop_image_id, created_at, updated_at";
+  "id, title, original_title, media_type, year, status, progress_current, progress_total, progress_unit, consumption_format, volume_current, volume_total, started_on, finished_on, rating, synopsis, review_title, review_body, verdict, has_spoilers, page_template, cover_image_id, backdrop_image_id, created_at, updated_at";

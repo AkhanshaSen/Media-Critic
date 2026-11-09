@@ -7,6 +7,8 @@ import {
 } from "@/features/entries/cover-image";
 import {
   ENTRY_SELECT,
+  PAGE_TEMPLATES,
+  SHARE_TEMPLATES,
   activeStatusFor,
   defaultProgressUnit,
   entryFormSchema,
@@ -14,6 +16,8 @@ import {
   todayIsoDate,
   type EntryFormValues,
   type MediaEntry,
+  type PageTemplate,
+  type ShareTemplate,
 } from "@/features/entries/schema";
 import { createClient } from "@/lib/supabase/client";
 
@@ -55,6 +59,11 @@ function normalizeEntry(
     started_on: row.started_on ?? null,
     finished_on: row.finished_on ?? null,
     synopsis: row.synopsis ?? null,
+    page_template:
+      row.page_template &&
+      (PAGE_TEMPLATES as readonly string[]).includes(row.page_template)
+        ? row.page_template
+        : "cinematic",
     cover_image_id: row.cover_image_id ?? null,
     backdrop_image_id: row.backdrop_image_id ?? null,
     cover_path: row.cover_path ?? null,
@@ -201,6 +210,71 @@ export async function updateEntry(
 
   await syncTags(id, userId, parsed.data.tags_text);
   return { ok: true, data: { id } };
+}
+
+export async function updatePageTemplate(
+  id: string,
+  pageTemplate: PageTemplate,
+): Promise<DataResult> {
+  if (!isUuid(id)) return { ok: false, error: "Invalid entry." };
+  if (!(PAGE_TEMPLATES as readonly string[]).includes(pageTemplate)) {
+    return { ok: false, error: "Unknown template." };
+  }
+
+  const userId = await requireUserId();
+  if (!userId) return { ok: false, error: "Sign in required." };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("media_entries")
+    .update({ page_template: pageTemplate })
+    .eq("id", id)
+    .eq("user_id", userId);
+
+  if (error) {
+    return { ok: false, error: "Could not save the look. Try again." };
+  }
+  return { ok: true };
+}
+
+export async function getShareTemplate(): Promise<ShareTemplate> {
+  const userId = await requireUserId();
+  if (!userId) return "minimal_dark";
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("user_settings")
+    .select("default_share_template")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const value = data?.default_share_template;
+  if (value && (SHARE_TEMPLATES as readonly string[]).includes(value)) {
+    return value as ShareTemplate;
+  }
+  return "minimal_dark";
+}
+
+export async function updateShareTemplate(
+  template: ShareTemplate,
+): Promise<DataResult> {
+  if (!(SHARE_TEMPLATES as readonly string[]).includes(template)) {
+    return { ok: false, error: "Unknown share look." };
+  }
+
+  const userId = await requireUserId();
+  if (!userId) return { ok: false, error: "Sign in required." };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("user_settings")
+    .update({ default_share_template: template })
+    .eq("user_id", userId);
+
+  if (error) {
+    return { ok: false, error: "Could not save share look. Try again." };
+  }
+  return { ok: true };
 }
 
 export async function deleteEntry(id: string): Promise<DataResult> {

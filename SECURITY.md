@@ -105,6 +105,7 @@ Reviews render as plain text (no `dangerouslySetInnerHTML`).
 4. **Required for profiles:** `20261109000003_ensure_user_profile.sql` (backfill + `ensure_user_profile` RPC)
 5. Progress format: `20261109000004_progress_format.sql` (unit, digital/physical, volumes)
 6. Image roles: `20261109000005_image_roles.sql` (poster / backdrop / still + `backdrop_image_id`)
+7. Page looks: `20261109000006_page_template.sql` (`page_template` cinematic / magazine / minimal)
 
 ## Safety script (not full VAPT)
 
