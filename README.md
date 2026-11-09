@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Media Critic
 
-## Getting Started
+Personal anime, movie, and manga tracker (ratings + reviews) for a **single Google-signed-in user**, deployable to **GitHub Pages**.
 
-First, run the development server:
+## Stack
+
+- Next.js static export (`output: 'export'`)
+- Supabase Auth (Google) + Postgres RLS
+- Zod validation in the browser
+- Tailwind + shadcn/ui
+
+## Why Google auth (even if “only me”)
+
+On a public GitHub Pages URL, **no auth + open RLS is unsafe**. Google sign-in + `user_id = auth.uid()` keeps strangers from editing your shelf. SQL injection risk stays low via the Supabase client + Zod (see [`SECURITY.md`](SECURITY.md)).
+
+## Local setup
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+`.env.local` (leave `NEXT_PUBLIC_BASE_PATH` empty for local):
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://kaiffjdbfjkjqisumklh.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-publishable-or-anon-key
+NEXT_PUBLIC_BASE_PATH=
+```
+
+### SQL (in order)
+
+1. [`supabase/migrations/20261109000000_init.sql`](supabase/migrations/20261109000000_init.sql)
+2. [`supabase/migrations/20261109000002_restore_auth_rls.sql`](supabase/migrations/20261109000002_restore_auth_rls.sql) — **required** for Google auth (replaces anonymous open policies)
+
+If you previously ran `00001_anonymous_shelf.sql`, still run `00002` before public deploy.
+
+### Auth redirects (local)
+
+1. **Enable Google** in [Auth → Providers](https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/auth/providers)  
+   (if you see `Unsupported provider: provider is not enabled`, this step was skipped).
+2. Create a Google Cloud **Web** OAuth client; set **Authorized redirect URI** to  
+   `https://kaiffjdbfjkjqisumklh.supabase.co/auth/v1/callback`  
+   Paste Client ID + Secret into Supabase Google provider → **Save**.  
+   If consent screen is **Testing**, add yourself as a test user.
+3. In [Auth → URL configuration](https://supabase.com/dashboard/project/kaiffjdbfjkjqisumklh/auth/url-configuration):
+   - Site URL: `http://localhost:3000`
+   - Redirect: `http://localhost:3000/auth/callback/`
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open **http://localhost:3000** (prefer `localhost` over `127.0.0.1`) → Continue with Google.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## GitHub Pages deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Set repo name → `NEXT_PUBLIC_BASE_PATH` (e.g. `/MEDIA-CRITIC`).
+2. GitHub → Settings → Secrets: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+3. GitHub → Variables: `NEXT_PUBLIC_BASE_PATH=/Your-Repo-Name`.
+4. Enable Pages: source **GitHub Actions**.
+5. Push to `main` / `master` — workflow [`.github/workflows/deploy-ghp.yml`](.github/workflows/deploy-ghp.yml) builds `out/` and deploys.
+6. Supabase Auth Site URL / redirects for  
+   `https://<user>.github.io/<repo>/` and  
+   `https://<user>.github.io/<repo>/auth/callback/`
 
-## Learn More
+Local GHP build:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+NEXT_PUBLIC_BASE_PATH=/MEDIA-CRITIC npm run build:ghp
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Safety check
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run security:check
+```
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Local app (no base path) |
+| `npm run build:ghp` | Static export to `out/` |
+| `npm run security:check` | Audit, lint, build, secret scan |
+| `npm run lint` | ESLint |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## App routes
+
+- `/login/` — Google sign-in
+- `/dashboard/` — home + recent
+- `/library/` — filter / search
+- `/add/` — create
+- `/entries/view/?id=` — detail
+- `/entries/edit/?id=` — edit
