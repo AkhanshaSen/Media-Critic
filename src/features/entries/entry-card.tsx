@@ -17,17 +17,25 @@ import { cn } from "@/lib/utils";
 export function EntryCard({
   entry,
   variant = "poster",
+  tone = "default",
 }: {
   entry: MediaEntry;
   variant?: "poster" | "compact";
+  tone?: "default" | "shelf";
 }) {
   const format = entry.consumption_format ?? "digital";
+  const shelf = tone === "shelf";
 
   if (variant === "compact") {
     return (
       <Link
         href={`/entries/view/?id=${entry.id}`}
-        className="border-border/80 bg-card/40 hover:border-amber-400/40 flex gap-3 overflow-hidden rounded-xl border p-2 shadow-md shadow-black/20 transition-colors"
+        className={cn(
+          "flex gap-3 overflow-hidden rounded-xl border p-2 transition-colors",
+          shelf
+            ? "border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-sm shadow-sky-900/5 hover:border-[var(--shelf-accent)]"
+            : "border-border/80 bg-card/40 shadow-md shadow-black/20 hover:border-amber-400/40",
+        )}
       >
         <div
           className={cn(

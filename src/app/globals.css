@@ -151,3 +151,92 @@
     @apply font-sans;
   }
 }
+
+/* Shelf page — pastel blue surface (scoped; does not change global theme) */
+.shelf-page {
+  --shelf-bg: oklch(0.96 0.025 240);
+  --shelf-surface: oklch(0.99 0.015 235 / 0.92);
+  --shelf-border: oklch(0.82 0.04 240);
+  --shelf-accent: oklch(0.62 0.1 245);
+  --shelf-muted: oklch(0.48 0.04 245);
+  --shelf-cta: oklch(0.58 0.12 250);
+  --shelf-cta-fg: oklch(0.99 0.01 240);
+  --shelf-chip: oklch(0.93 0.03 240);
+  border-radius: 1.25rem;
+  padding: 0.75rem;
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 10% -10%,
+      oklch(0.88 0.05 230 / 0.55),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 100% 0%,
+      oklch(0.9 0.04 250 / 0.4),
+      transparent 50%
+    ),
+    var(--shelf-bg);
+}
+
+.dark .shelf-page {
+  --shelf-bg: oklch(0.16 0.03 250);
+  --shelf-surface: oklch(0.2 0.035 250 / 0.88);
+  --shelf-border: oklch(0.4 0.05 245);
+  --shelf-accent: oklch(0.75 0.09 230);
+  --shelf-muted: oklch(0.72 0.04 240);
+  --shelf-cta: oklch(0.68 0.11 245);
+  --shelf-cta-fg: oklch(0.14 0.03 250);
+  --shelf-chip: oklch(0.28 0.04 250);
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 10% -10%,
+      oklch(0.28 0.06 245 / 0.45),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 100% 0%,
+      oklch(0.25 0.05 230 / 0.35),
+      transparent 50%
+    ),
+    var(--shelf-bg);
+}
+
+.shelf-page .shelf-surface {
+  background: var(--shelf-surface);
+  border-color: var(--shelf-border);
+}
+
+.shelf-page .shelf-accent-bar {
+  border-color: var(--shelf-accent);
+}
+
+.shelf-page .shelf-muted {
+  color: var(--shelf-muted);
+}
+
+.shelf-page .shelf-link {
+  color: var(--shelf-accent);
+}
+
+.shelf-page .shelf-cta {
+  background: var(--shelf-cta);
+  color: var(--shelf-cta-fg);
+}
+
+.shelf-page .shelf-cta:hover {
+  filter: brightness(1.06);
+}
+
+.shelf-page .shelf-chip {
+  background: var(--shelf-chip);
+  color: var(--shelf-muted);
+}
+
+.shelf-page .shelf-outline {
+  border-color: var(--shelf-border);
+  color: var(--shelf-accent);
+}
+
+.shelf-page .shelf-outline:hover {
+  background: var(--shelf-chip);
+}
