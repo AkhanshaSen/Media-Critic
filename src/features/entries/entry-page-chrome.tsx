@@ -7,17 +7,30 @@ import { ScreenBreadcrumb } from "@/components/layout/screen-breadcrumb";
 import type { MediaEntry } from "@/features/entries/schema";
 import { cn } from "@/lib/utils";
 
+export type ShareStatus = "idle" | "copied" | "shared" | "error";
+
 export function EntryPageChrome({
   entry,
   notice,
+  shareStatus = "idle",
   onShare,
   className,
 }: {
   entry: MediaEntry;
   notice?: string | null;
+  shareStatus?: ShareStatus;
   onShare: () => void;
   className?: string;
 }) {
+  const shareLabel =
+    shareStatus === "copied"
+      ? "Copied"
+      : shareStatus === "shared"
+        ? "Shared"
+        : shareStatus === "error"
+          ? "Retry share"
+          : "Share";
+
   return (
     <div className={cn("space-y-3", className)}>
       <ScreenBreadcrumb
@@ -44,10 +57,15 @@ export function EntryPageChrome({
         <button
           type="button"
           onClick={onShare}
-          className="border-border hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium"
+          className={cn(
+            "border-border hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium",
+            shareStatus === "copied" || shareStatus === "shared"
+              ? "border-amber-400/50 bg-amber-400/10 text-amber-700 dark:text-amber-200"
+              : null,
+          )}
         >
           <Share2 className="size-3.5" aria-hidden />
-          Share
+          {shareLabel}
         </button>
 
         <Link
@@ -59,10 +77,16 @@ export function EntryPageChrome({
         </Link>
       </div>
 
+      {shareStatus === "error" ? (
+        <p role="status" className="text-destructive text-xs">
+          Could not share. Open Share & layout to copy manually.
+        </p>
+      ) : null}
+
       {notice ? (
         <p
           role="status"
-          className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-100"
+          className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100"
         >
           {notice}
         </p>

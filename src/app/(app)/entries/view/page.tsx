@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -12,7 +12,11 @@ import {
   type EntryImage,
 } from "@/features/entries/data";
 import { EntryLayoutByTemplate } from "@/features/entries/entry-layouts";
-import { EntryPageChrome } from "@/features/entries/entry-page-chrome";
+import {
+  EntryPageChrome,
+  type ShareStatus,
+} from "@/features/entries/entry-page-chrome";
+import { shareEntryReview } from "@/features/entries/share-cards";
 import {
   TemplateExplorer,
   useLooksOpenState,
@@ -44,7 +48,9 @@ function EntryViewContent() {
   const [shareTemplate, setShareTemplate] =
     useState<ShareTemplate>("minimal_dark");
   const [looksOpen, setLooksOpen] = useLooksOpenState();
+  const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
   const [loading, setLoading] = useState(true);
+  const shareStatusTimer = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,6 +82,42 @@ function EntryViewContent() {
     };
   }, [id]);
 
+  useEffect(() => {
+    return () => {
+      if (shareStatusTimer.current != null) {
+        window.clearTimeout(shareStatusTimer.current);
+      }
+    };
+  }, []);
+
+  function flashShareStatus(next: ShareStatus) {
+    setShareStatus(next);
+    if (shareStatusTimer.current != null) {
+      window.clearTimeout(shareStatusTimer.current);
+    }
+    shareStatusTimer.current = window.setTimeout(() => {
+      setShareStatus("idle");
+    }, 2200);
+  }
+
+  async function handleShare() {
+    if (!entry) return;
+    setLooksOpen(true);
+    window.setTimeout(() => {
+      document
+        .getElementById("share-layout")
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 60);
+
+    const result = await shareEntryReview(entry);
+    if (result.ok) {
+      flashShareStatus(result.method === "share" ? "shared" : "copied");
+      return;
+    }
+    if (result.aborted) return;
+    flashShareStatus("error");
+  }
+
   if (loading) {
     return <p className="text-muted-foreground text-sm">Loading…</p>;
   }
@@ -98,7 +140,8 @@ function EntryViewContent() {
         notice={
           justAdded ? "Added to your shelf — write your review anytime." : null
         }
-        onShare={() => setLooksOpen(true)}
+        shareStatus={shareStatus}
+        onShare={() => void handleShare()}
       />
 
       <TemplateExplorer

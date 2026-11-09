@@ -277,6 +277,48 @@ export async function updateShareTemplate(
   return { ok: true };
 }
 
+export type UserTheme = "light" | "dark" | "system";
+
+const THEME_VALUES = ["light", "dark", "system"] as const;
+
+export async function getUserTheme(): Promise<UserTheme | null> {
+  const userId = await requireUserId();
+  if (!userId) return null;
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("user_settings")
+    .select("theme")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const value = data?.theme;
+  if (value && (THEME_VALUES as readonly string[]).includes(value)) {
+    return value as UserTheme;
+  }
+  return null;
+}
+
+export async function updateUserTheme(theme: UserTheme): Promise<DataResult> {
+  if (!(THEME_VALUES as readonly string[]).includes(theme)) {
+    return { ok: false, error: "Unknown theme." };
+  }
+
+  const userId = await requireUserId();
+  if (!userId) return { ok: false, error: "Sign in required." };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("user_settings")
+    .update({ theme })
+    .eq("user_id", userId);
+
+  if (error) {
+    return { ok: false, error: "Could not save theme. Try again." };
+  }
+  return { ok: true };
+}
+
 /** Mean rating across the signed-in user's rated shelf titles. */
 export async function getShelfAverageRating(): Promise<number | null> {
   const userId = await requireUserId();

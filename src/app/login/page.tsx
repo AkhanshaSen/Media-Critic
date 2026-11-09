@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { EmailLoginForm } from "@/components/auth/email-login-form";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { useAuth } from "@/components/auth/auth-provider";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
   Card,
   CardContent,
@@ -42,8 +43,11 @@ function LoginContent() {
   }, [loading, user, router, next]);
 
   return (
-    <main className="from-background via-background to-primary/5 flex min-h-full flex-1 items-center justify-center bg-gradient-to-b p-6">
-      <Card className="w-full max-w-md border-white/10 shadow-2xl shadow-black/40">
+    <main className="from-background via-background to-primary/5 relative flex min-h-full flex-1 items-center justify-center bg-gradient-to-b p-6">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      <Card className="border-border w-full max-w-md shadow-2xl shadow-black/20 dark:border-white/10 dark:shadow-black/40">
         <CardHeader className="space-y-2">
           <CardTitle className="text-2xl tracking-tight">Media Critic</CardTitle>
           <CardDescription>

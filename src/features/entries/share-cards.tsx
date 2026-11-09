@@ -285,3 +285,34 @@ export function buildShareText(
   ].filter(Boolean);
   return parts.join("\n");
 }
+
+export type ShareEntryResult =
+  | { ok: true; method: "share" | "clipboard" }
+  | { ok: false; error: string; aborted?: boolean };
+
+/** Native share sheet when available; otherwise copy review text to clipboard. */
+export async function shareEntryReview(
+  entry: MediaEntry,
+  options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
+): Promise<ShareEntryResult> {
+  const text = buildShareText(entry, options);
+
+  if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+    try {
+      await navigator.share({ title: entry.title, text });
+      return { ok: true, method: "share" };
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return { ok: false, error: "Share cancelled.", aborted: true };
+      }
+      // Fall through to clipboard if share failed for other reasons.
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    return { ok: true, method: "clipboard" };
+  } catch {
+    return { ok: false, error: "Could not copy. Try again." };
+  }
+}

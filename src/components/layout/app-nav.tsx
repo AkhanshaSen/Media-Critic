@@ -78,7 +78,7 @@ export function AppSidebar() {
               className={cn(
                 "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors",
                 isActive
-                  ? "bg-amber-400/15 font-semibold text-amber-300 ring-1 ring-amber-400/30"
+                  ? "bg-amber-400/15 font-semibold text-amber-800 ring-1 ring-amber-400/30 dark:text-amber-300"
                   : "hover:bg-sidebar-accent/70",
               )}
             >
@@ -123,7 +123,7 @@ export function MobileTabBar() {
             className={cn(
               "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px]",
               isActive
-                ? "font-semibold text-amber-300"
+                ? "font-semibold text-amber-800 dark:text-amber-300"
                 : "text-muted-foreground",
             )}
           >

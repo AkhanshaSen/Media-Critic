@@ -9,8 +9,8 @@ import {
   updateShareTemplate,
 } from "@/features/entries/data";
 import {
-  buildShareText,
   ShareCardPreview,
+  shareEntryReview,
   type SharePreviewTheme,
 } from "@/features/entries/share-cards";
 import {
@@ -84,23 +84,26 @@ export function TemplateExplorer({
   }
 
   async function copyText() {
-    try {
-      await navigator.clipboard.writeText(
-        buildShareText(entry, {
-          includeShelfAverage: showShelfAvg,
-          shelfAverage,
-        }),
-      );
+    const result = await shareEntryReview(entry, {
+      includeShelfAverage: showShelfAvg,
+      shelfAverage,
+    });
+    if (result.ok) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setError("Could not copy. Try again.");
+      return;
+    }
+    if (!result.aborted) {
+      setError(result.error);
     }
   }
 
   if (!open) {
     return (
-      <div className="border-border/80 bg-card/40 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-md">
+      <div
+        id="share-layout"
+        className="border-border/80 bg-card/40 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-md"
+      >
         <div className="min-w-0">
           <p className="text-xs font-medium tracking-tight">Share & layout</p>
           <p className="text-muted-foreground truncate text-[11px]">

@@ -6,6 +6,7 @@ import { RequireAuth } from "@/components/auth/require-auth";
 import { useAuth } from "@/components/auth/auth-provider";
 import { AppSidebar, MobileTabBar } from "@/components/layout/app-nav";
 import { SignOutButton } from "@/components/layout/sign-out-button";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AppLayout({
@@ -95,7 +96,10 @@ function AppHeader() {
           </p>
         </div>
       </div>
-      <SignOutButton />
+      <div className="flex shrink-0 items-center gap-2">
+        <ThemeToggle />
+        <SignOutButton />
+      </div>
     </header>
   );
 }
