@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { ProgressBar } from "@/features/entries/progress-bar";
+import { RatingStars } from "@/features/entries/rating-stars";
 import {
   CONSUMPTION_FORMAT_LABELS,
   MEDIA_TYPE_GRADIENT,
@@ -51,8 +52,13 @@ export function EntryCard({ entry }: { entry: MediaEntry }) {
             {MEDIA_TYPE_LABELS[entry.media_type]}
           </span>
           {entry.rating != null ? (
-            <span className="rounded-xl bg-amber-400 px-2.5 py-1 text-xs font-black text-amber-950 shadow-md tabular-nums">
-              {entry.rating}
+            <span className="rounded-xl bg-amber-400 px-2 py-1 shadow-md">
+              <RatingStars
+                value={entry.rating}
+                size="sm"
+                variant="light"
+                showValue
+              />
             </span>
           ) : null}
         </div>

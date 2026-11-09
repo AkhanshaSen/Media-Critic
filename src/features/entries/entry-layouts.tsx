@@ -14,6 +14,7 @@ import type { EntryImage } from "@/features/entries/cover-image";
 import { DeleteEntryButton } from "@/features/entries/delete-entry-button";
 import { EntryGallery } from "@/features/entries/entry-gallery";
 import { ProgressControls } from "@/features/entries/progress-controls";
+import { RatingStars } from "@/features/entries/rating-stars";
 import {
   CONSUMPTION_FORMAT_LABELS,
   MEDIA_TYPE_GRADIENT,
@@ -64,13 +65,18 @@ function MetaPills({ entry }: { entry: MediaEntry }) {
 
 function ScoreBadge({ entry }: { entry: MediaEntry }) {
   return (
-    <div className="rounded-2xl bg-amber-400 px-5 py-3 text-center shadow-lg shadow-amber-900/40">
+    <div className="rounded-2xl bg-amber-400 px-4 py-3 shadow-lg shadow-amber-900/40">
       <p className="text-[10px] font-bold tracking-widest text-amber-950 uppercase">
         Score
       </p>
-      <p className="text-3xl font-black text-amber-950 tabular-nums">
-        {entry.rating != null ? entry.rating : "—"}
-      </p>
+      <div className="mt-1 flex items-center justify-center">
+        <RatingStars
+          value={entry.rating}
+          size="lg"
+          variant="light"
+          showValue
+        />
+      </div>
     </div>
   );
 }
@@ -395,10 +401,20 @@ export function MinimalLayout({
           <div className="min-w-0 flex-1 space-y-2">
             <MetaPills entry={entry} />
             <h1 className="text-2xl font-bold tracking-tight">{entry.title}</h1>
-            <p className="text-muted-foreground text-sm tabular-nums">
-              {formatProgress(entry)}
-              {entry.rating != null ? ` · Score ${entry.rating}` : ""}
-            </p>
+            <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
+              <span className="tabular-nums">{formatProgress(entry)}</span>
+              {entry.rating != null ? (
+                <>
+                  <span aria-hidden>·</span>
+                  <RatingStars
+                    value={entry.rating}
+                    size="sm"
+                    variant="dark"
+                    showValue
+                  />
+                </>
+              ) : null}
+            </div>
             <ActionButtons entryId={entry.id} />
           </div>
         </div>

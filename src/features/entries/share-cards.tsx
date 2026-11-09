@@ -1,5 +1,6 @@
 "use client";
 
+import { RatingStars } from "@/features/entries/rating-stars";
 import {
   SHARE_TEMPLATE_LABELS,
   type MediaEntry,
@@ -7,16 +8,24 @@ import {
 } from "@/features/entries/schema";
 import { cn } from "@/lib/utils";
 
+export type SharePreviewTheme = "dark" | "light";
+
 export function ShareCardPreview({
   entry,
   template,
   selected,
   onSelect,
+  theme = "dark",
+  showShelfAverage = false,
+  shelfAverage = null,
 }: {
   entry: MediaEntry;
   template: ShareTemplate;
   selected?: boolean;
   onSelect?: () => void;
+  theme?: SharePreviewTheme;
+  showShelfAverage?: boolean;
+  shelfAverage?: number | null;
 }) {
   return (
     <button
@@ -29,79 +38,247 @@ export function ShareCardPreview({
           : "border-white/10 hover:border-amber-400/40",
       )}
     >
-      <div className="border-b border-white/10 bg-black/40 px-2 py-1 text-[10px] font-medium tracking-wide text-amber-200/90 uppercase">
+      <div
+        className={cn(
+          "border-b px-2 py-1 text-[10px] font-medium tracking-wide uppercase",
+          theme === "light"
+            ? "border-black/10 bg-stone-100 text-amber-800"
+            : "border-white/10 bg-black/40 text-amber-200/90",
+        )}
+      >
         {SHARE_TEMPLATE_LABELS[template]}
       </div>
       {template === "minimal_dark" ? (
-        <MinimalDarkCard entry={entry} />
+        <MinimalDarkCard
+          entry={entry}
+          theme={theme}
+          showShelfAverage={showShelfAverage}
+          shelfAverage={shelfAverage}
+        />
       ) : template === "poster_score" ? (
-        <PosterScoreCard entry={entry} />
+        <PosterScoreCard
+          entry={entry}
+          theme={theme}
+          showShelfAverage={showShelfAverage}
+          shelfAverage={shelfAverage}
+        />
       ) : (
-        <VerdictQuoteCard entry={entry} />
+        <VerdictQuoteCard
+          entry={entry}
+          theme={theme}
+          showShelfAverage={showShelfAverage}
+          shelfAverage={shelfAverage}
+        />
       )}
     </button>
   );
 }
 
-function MinimalDarkCard({ entry }: { entry: MediaEntry }) {
+function ShelfAvgLine({
+  theme,
+  shelfAverage,
+}: {
+  theme: SharePreviewTheme;
+  shelfAverage: number | null;
+}) {
+  if (shelfAverage == null) return null;
   return (
-    <div className="space-y-2 bg-[#0b0b0f] p-3">
-      <p className="text-[10px] tracking-widest text-white/50 uppercase">
-        Media Critic
-      </p>
-      <p className="line-clamp-2 text-sm font-semibold text-white">
-        {entry.title}
-      </p>
-      <p className="text-amber-400 text-lg font-black tabular-nums">
-        {entry.rating != null ? entry.rating : "—"}
-        <span className="text-white/40 text-xs font-normal"> / 10</span>
-      </p>
+    <div
+      className={cn(
+        "flex items-center gap-2 pt-1",
+        theme === "light" ? "text-stone-500" : "text-white/50",
+      )}
+    >
+      <span className="text-[10px] tracking-wide uppercase">Shelf</span>
+      <RatingStars
+        value={shelfAverage}
+        size="sm"
+        variant={theme}
+        showValue
+      />
     </div>
   );
 }
 
-function PosterScoreCard({ entry }: { entry: MediaEntry }) {
+function MinimalDarkCard({
+  entry,
+  theme,
+  showShelfAverage,
+  shelfAverage,
+}: {
+  entry: MediaEntry;
+  theme: SharePreviewTheme;
+  showShelfAverage: boolean;
+  shelfAverage: number | null;
+}) {
+  const light = theme === "light";
   return (
-    <div className="relative flex min-h-28 items-end overflow-hidden bg-[#111]">
+    <div
+      className={cn(
+        "space-y-2 p-3",
+        light ? "bg-[#f7f4ef]" : "bg-[#0b0b0f]",
+      )}
+    >
+      <p
+        className={cn(
+          "text-[10px] tracking-widest uppercase",
+          light ? "text-stone-400" : "text-white/50",
+        )}
+      >
+        Media Critic
+      </p>
+      <p
+        className={cn(
+          "line-clamp-2 text-sm font-semibold",
+          light ? "text-stone-900" : "text-white",
+        )}
+      >
+        {entry.title}
+      </p>
+      <RatingStars
+        value={entry.rating}
+        size="lg"
+        variant={theme}
+        showValue
+      />
+      {showShelfAverage ? (
+        <ShelfAvgLine theme={theme} shelfAverage={shelfAverage} />
+      ) : null}
+    </div>
+  );
+}
+
+function PosterScoreCard({
+  entry,
+  theme,
+  showShelfAverage,
+  shelfAverage,
+}: {
+  entry: MediaEntry;
+  theme: SharePreviewTheme;
+  showShelfAverage: boolean;
+  shelfAverage: number | null;
+}) {
+  const light = theme === "light";
+  return (
+    <div
+      className={cn(
+        "relative flex min-h-28 items-end overflow-hidden",
+        light ? "bg-stone-200" : "bg-[#111]",
+      )}
+    >
       {entry.cover_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={entry.cover_url}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-50"
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover",
+            light ? "opacity-40" : "opacity-50",
+          )}
         />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-900/40 to-black" />
+        <div
+          className={cn(
+            "absolute inset-0",
+            light
+              ? "bg-gradient-to-br from-amber-100 to-stone-200"
+              : "bg-gradient-to-br from-amber-900/40 to-black",
+          )}
+        />
       )}
-      <div className="relative z-10 flex w-full items-end justify-between gap-2 bg-gradient-to-t from-black via-black/70 to-transparent p-3">
-        <p className="line-clamp-2 text-xs font-semibold text-white">
-          {entry.title}
-        </p>
-        <span className="shrink-0 rounded-md bg-amber-400 px-2 py-1 text-xs font-black text-amber-950 tabular-nums">
-          {entry.rating != null ? entry.rating : "—"}
-        </span>
+      <div
+        className={cn(
+          "relative z-10 flex w-full flex-col gap-1.5 p-3",
+          light
+            ? "bg-gradient-to-t from-white via-white/80 to-transparent"
+            : "bg-gradient-to-t from-black via-black/70 to-transparent",
+        )}
+      >
+        <div className="flex items-end justify-between gap-2">
+          <p
+            className={cn(
+              "line-clamp-2 text-xs font-semibold",
+              light ? "text-stone-900" : "text-white",
+            )}
+          >
+            {entry.title}
+          </p>
+          <span
+            className={cn(
+              "shrink-0 rounded-md px-2 py-1 shadow-sm",
+              light ? "bg-amber-400/90" : "bg-amber-400",
+            )}
+          >
+            <RatingStars
+              value={entry.rating}
+              size="sm"
+              variant="light"
+              showValue
+            />
+          </span>
+        </div>
+        {showShelfAverage ? (
+          <ShelfAvgLine theme={theme} shelfAverage={shelfAverage} />
+        ) : null}
       </div>
     </div>
   );
 }
 
-function VerdictQuoteCard({ entry }: { entry: MediaEntry }) {
+function VerdictQuoteCard({
+  entry,
+  theme,
+  showShelfAverage,
+  shelfAverage,
+}: {
+  entry: MediaEntry;
+  theme: SharePreviewTheme;
+  showShelfAverage: boolean;
+  shelfAverage: number | null;
+}) {
+  const light = theme === "light";
   return (
-    <div className="space-y-2 bg-[#121018] p-3">
-      <p className="line-clamp-1 text-[11px] font-medium text-white/70">
+    <div
+      className={cn(
+        "space-y-2 p-3",
+        light ? "bg-[#faf8f5]" : "bg-[#121018]",
+      )}
+    >
+      <p
+        className={cn(
+          "line-clamp-1 text-[11px] font-medium",
+          light ? "text-stone-600" : "text-white/70",
+        )}
+      >
         {entry.title}
       </p>
-      <p className="line-clamp-3 text-sm text-amber-100/90 italic">
+      <p
+        className={cn(
+          "line-clamp-3 text-sm italic",
+          light ? "text-stone-800" : "text-amber-100/90",
+        )}
+      >
         “{entry.verdict || entry.review_body || "No verdict yet."}”
       </p>
+      <RatingStars value={entry.rating} size="sm" variant={theme} showValue />
+      {showShelfAverage ? (
+        <ShelfAvgLine theme={theme} shelfAverage={shelfAverage} />
+      ) : null}
     </div>
   );
 }
 
-export function buildShareText(entry: MediaEntry): string {
+export function buildShareText(
+  entry: MediaEntry,
+  options?: { includeShelfAverage?: boolean; shelfAverage?: number | null },
+): string {
   const parts = [
     entry.title,
     entry.rating != null ? `Score: ${entry.rating}/10` : null,
+    options?.includeShelfAverage && options.shelfAverage != null
+      ? `Shelf average: ${options.shelfAverage}/10`
+      : null,
     entry.verdict ? `Verdict: ${entry.verdict}` : null,
     entry.review_body ? entry.review_body.slice(0, 400) : null,
     "— via Media Critic",

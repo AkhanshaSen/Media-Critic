@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CoverPicker } from "@/features/entries/cover-picker";
+import { RatingStars } from "@/features/entries/rating-stars";
 import { StillsPicker } from "@/features/entries/stills-picker";
 import {
   addEntryStills,
@@ -589,6 +590,14 @@ export function EntryForm({ mode, entryId, initial }: EntryFormProps) {
             aria-invalid={Boolean(fieldErrors.rating) || undefined}
             className={fieldClass(Boolean(fieldErrors.rating))}
           />
+          {values.rating !== "" && values.rating != null ? (
+            <RatingStars
+              value={Number(values.rating)}
+              size="md"
+              variant="dark"
+              showValue
+            />
+          ) : null}
           {fieldErrors.rating ? (
             <p className="text-destructive text-xs">{fieldErrors.rating}</p>
           ) : null}

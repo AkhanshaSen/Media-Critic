@@ -12,7 +12,10 @@ import {
   type EntryImage,
 } from "@/features/entries/data";
 import { EntryLayoutByTemplate } from "@/features/entries/entry-layouts";
-import { TemplateExplorer } from "@/features/entries/template-explorer";
+import {
+  TemplateExplorer,
+  useLooksOpenState,
+} from "@/features/entries/template-explorer";
 import type {
   MediaEntry,
   PageTemplate,
@@ -38,6 +41,7 @@ function EntryViewContent() {
   const [pageTemplate, setPageTemplate] = useState<PageTemplate>("cinematic");
   const [shareTemplate, setShareTemplate] =
     useState<ShareTemplate>("minimal_dark");
+  const [looksOpen, setLooksOpen] = useLooksOpenState();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -91,6 +95,8 @@ function EntryViewContent() {
         entry={entry}
         pageTemplate={pageTemplate}
         shareTemplate={shareTemplate}
+        open={looksOpen}
+        onOpenChange={setLooksOpen}
         onPageTemplate={(t) => {
           setPageTemplate(t);
           setEntry((prev) => (prev ? { ...prev, page_template: t } : prev));

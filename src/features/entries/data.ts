@@ -277,6 +277,29 @@ export async function updateShareTemplate(
   return { ok: true };
 }
 
+/** Mean rating across the signed-in user's rated shelf titles. */
+export async function getShelfAverageRating(): Promise<number | null> {
+  const userId = await requireUserId();
+  if (!userId) return null;
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("media_entries")
+    .select("rating")
+    .eq("user_id", userId)
+    .not("rating", "is", null);
+
+  if (error || !data?.length) return null;
+
+  const values = data
+    .map((row) => row.rating)
+    .filter((n): n is number => typeof n === "number" && !Number.isNaN(n));
+  if (!values.length) return null;
+
+  const avg = values.reduce((sum, n) => sum + n, 0) / values.length;
+  return Math.round(avg * 10) / 10;
+}
+
 export async function deleteEntry(id: string): Promise<DataResult> {
   if (!isUuid(id)) return { ok: false, error: "Invalid entry." };
 

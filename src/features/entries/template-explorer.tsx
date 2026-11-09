@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 import {
+  getShelfAverageRating,
   updatePageTemplate,
   updateShareTemplate,
 } from "@/features/entries/data";
-import { buildShareText, ShareCardPreview } from "@/features/entries/share-cards";
+import {
+  buildShareText,
+  ShareCardPreview,
+  type SharePreviewTheme,
+} from "@/features/entries/share-cards";
 import {
   PAGE_TEMPLATES,
   PAGE_TEMPLATE_LABELS,
   SHARE_TEMPLATES,
+  SHARE_TEMPLATE_LABELS,
   type MediaEntry,
   type PageTemplate,
   type ShareTemplate,
@@ -21,18 +28,36 @@ export function TemplateExplorer({
   entry,
   pageTemplate,
   shareTemplate,
+  open,
+  onOpenChange,
   onPageTemplate,
   onShareTemplate,
 }: {
   entry: MediaEntry;
   pageTemplate: PageTemplate;
   shareTemplate: ShareTemplate;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onPageTemplate: (t: PageTemplate) => void;
   onShareTemplate: (t: ShareTemplate) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewTheme, setPreviewTheme] = useState<SharePreviewTheme>("dark");
+  const [showShelfAvg, setShowShelfAvg] = useState(false);
+  const [shelfAverage, setShelfAverage] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!open || !showShelfAvg) return;
+    let cancelled = false;
+    void getShelfAverageRating().then((avg) => {
+      if (!cancelled) setShelfAverage(avg);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, showShelfAvg]);
 
   async function pickPage(t: PageTemplate) {
     if (t === pageTemplate || busy) return;
@@ -60,7 +85,12 @@ export function TemplateExplorer({
 
   async function copyText() {
     try {
-      await navigator.clipboard.writeText(buildShareText(entry));
+      await navigator.clipboard.writeText(
+        buildShareText(entry, {
+          includeShelfAverage: showShelfAvg,
+          shelfAverage,
+        }),
+      );
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -68,8 +98,29 @@ export function TemplateExplorer({
     }
   }
 
+  if (!open) {
+    return (
+      <div className="border-border/80 bg-card/40 sticky top-14 z-20 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-md">
+        <div className="min-w-0">
+          <p className="text-xs font-medium tracking-tight">Looks</p>
+          <p className="text-muted-foreground truncate text-[11px]">
+            {PAGE_TEMPLATE_LABELS[pageTemplate]} ·{" "}
+            {SHARE_TEMPLATE_LABELS[shareTemplate]}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onOpenChange(true)}
+          className="border-border hover:bg-muted inline-flex h-8 shrink-0 items-center rounded-lg border px-3 text-xs font-medium"
+        >
+          Customize looks
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <section className="border-border/80 bg-card/50 sticky top-14 z-20 space-y-4 rounded-2xl border p-4 shadow-xl shadow-black/30 backdrop-blur-md">
+    <section className="border-border/80 bg-card/50 z-20 space-y-4 rounded-2xl border p-4 shadow-xl shadow-black/30 backdrop-blur-md">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold tracking-tight">Looks</h2>
@@ -78,13 +129,52 @@ export function TemplateExplorer({
             this title / your account.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void copyText()}
-          className="border-border hover:bg-muted inline-flex h-8 items-center rounded-lg border px-3 text-xs font-medium"
-        >
-          {copied ? "Copied" : "Copy review text"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void copyText()}
+            className="border-border hover:bg-muted inline-flex h-8 items-center rounded-lg border px-3 text-xs font-medium"
+          >
+            {copied ? "Copied" : "Copy review text"}
+          </button>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="border-border hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg border"
+            aria-label="Close looks"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="inline-flex rounded-lg border border-white/10 p-0.5">
+          {(["dark", "light"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setPreviewTheme(t)}
+              className={cn(
+                "rounded-md px-2.5 py-1 text-[11px] font-medium capitalize transition-colors",
+                previewTheme === t
+                  ? "bg-amber-400 text-amber-950"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <label className="text-muted-foreground inline-flex cursor-pointer items-center gap-2 text-[11px]">
+          <input
+            type="checkbox"
+            checked={showShelfAvg}
+            onChange={(e) => setShowShelfAvg(e.target.checked)}
+            className="accent-amber-400 size-3.5 rounded"
+          />
+          All-time avg
+        </label>
       </div>
 
       <div className="space-y-2">
@@ -126,6 +216,9 @@ export function TemplateExplorer({
               template={t}
               selected={shareTemplate === t}
               onSelect={() => void pickShare(t)}
+              theme={previewTheme}
+              showShelfAverage={showShelfAvg}
+              shelfAverage={shelfAverage}
             />
           ))}
         </div>
@@ -134,6 +227,12 @@ export function TemplateExplorer({
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
     </section>
   );
+}
+
+/** Collapsed by default so the entry page is readable; reopen via Customize looks. */
+export function useLooksOpenState(): [boolean, (open: boolean) => void] {
+  const [open, setOpen] = useState(false);
+  return [open, setOpen];
 }
 
 function LayoutThumb({ kind }: { kind: PageTemplate }) {
