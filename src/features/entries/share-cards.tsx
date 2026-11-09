@@ -6,7 +6,7 @@ import {
   type MediaEntry,
   type ShareTemplate,
 } from "@/features/entries/schema";
-import { appPath, getSiteUrl } from "@/lib/site";
+import { getSiteUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export type SharePreviewTheme = "dark" | "light";
@@ -295,7 +295,9 @@ function VerdictQuoteCard({
 }
 
 export function buildShareLink(entryId: string): string {
-  return `${getSiteUrl()}${appPath("/entries/view/")}?id=${encodeURIComponent(entryId)}`;
+  // getSiteUrl() already includes basePath — do not use appPath() here or the
+  // base path is prepended twice (e.g. /Media-Critic/Media-Critic/…)
+  return `${getSiteUrl()}/entries/view/?id=${encodeURIComponent(entryId)}`;
 }
 
 export function buildShareCaption(
@@ -411,10 +413,16 @@ export async function shareEntryBundle(
       url,
     };
 
+    // Build a priority list — only ONE succeeds before returning.
+    // textOnly is a final fallback, never alongside a file share attempt.
     const attempts: ShareData[] = [];
-    if (!canShareData || canShareData(withFiles)) attempts.push(withFiles);
-    else if (!canShareData || canShareData(filesOnly)) attempts.push(filesOnly);
-    if (!canShareData || canShareData(textOnly)) attempts.push(textOnly);
+    if (!canShareData || canShareData(withFiles)) {
+      attempts.push(withFiles);
+    } else if (!canShareData || canShareData(filesOnly)) {
+      attempts.push(filesOnly);
+    } else if (!canShareData || canShareData(textOnly)) {
+      attempts.push(textOnly);
+    }
 
     for (const data of attempts) {
       try {
