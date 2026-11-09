@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -28,8 +29,6 @@ export const metadata: Metadata = {
     "Personal anime, movie, and manga tracker with ratings and reviews.",
 };
 
-const themeBootScript = `(function(){try{var t=localStorage.getItem("media-critic-theme");var dark=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",dark);}catch(e){document.documentElement.classList.add("dark");}})();`;
-
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -38,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        <Script src="/theme-boot.js" strategy="beforeInteractive" />
       </head>
       <body className="bg-background text-foreground flex min-h-full flex-col font-sans">
         <AuthProvider>
