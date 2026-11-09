@@ -37,20 +37,16 @@ export default function AppLayout({
 
 function AppHeader() {
   const { user } = useAuth();
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const metaAvatar =
+    typeof user?.user_metadata?.avatar_url === "string"
+      ? user.user_metadata.avatar_url
+      : typeof user?.user_metadata?.picture === "string"
+        ? user.user_metadata.picture
+        : null;
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.id) {
-      setAvatarUrl(null);
-      return;
-    }
-
-    const metaAvatar =
-      typeof user.user_metadata?.avatar_url === "string"
-        ? user.user_metadata.avatar_url
-        : typeof user.user_metadata?.picture === "string"
-          ? user.user_metadata.picture
-          : null;
+    if (!user?.id) return;
 
     let active = true;
     const supabase = createClient();
@@ -63,13 +59,15 @@ function AppHeader() {
         .maybeSingle();
 
       if (!active) return;
-      setAvatarUrl(data?.avatar_url || metaAvatar);
+      setProfileAvatar(data?.avatar_url ?? null);
     })();
 
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [user?.id]);
+
+  const avatarUrl = profileAvatar || metaAvatar;
 
   const displayName =
     user?.user_metadata?.full_name ||
