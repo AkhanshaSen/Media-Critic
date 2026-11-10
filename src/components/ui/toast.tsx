@@ -75,8 +75,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={item.id}
             role="status"
             className={cn(
-              "pointer-events-auto border-border bg-card text-card-foreground flex w-full max-w-sm items-start gap-3 rounded-xl border px-3 py-2.5 shadow-xl shadow-black/30",
-              "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2",
+              "pointer-events-auto border-border bg-card text-card-foreground flex w-full max-w-sm items-start gap-3 rounded-[var(--r-lg)] border px-3 py-2.5 shadow-lg shadow-black/20",
+              "motion-safe:animate-[toast-in_220ms_cubic-bezier(0.34,1.56,0.64,1)]",
             )}
           >
             <div className="min-w-0 flex-1">

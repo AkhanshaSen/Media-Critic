@@ -36,7 +36,7 @@ export function EntryGallery({ stills }: { stills: EntryImage[] }) {
 
   return (
     <section className="space-y-4">
-      <h2 className="border-l-2 border-amber-400 pl-3 text-xl font-bold tracking-tight">
+      <h2 className="border-l-2 border-[var(--accent)] pl-3 text-[0.9rem] font-semibold tracking-tight">
         Gallery
       </h2>
 

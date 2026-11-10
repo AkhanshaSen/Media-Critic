@@ -35,11 +35,11 @@ export function ContinueRail({
         />
       ) : (
         <div className="flex items-end justify-between gap-3">
-          <div className="border-l-2 border-amber-400 pl-3">
-            <h2 className="text-xl font-bold tracking-tight">
+          <div className="border-l-2 border-[var(--accent)] pl-3">
+            <h2 className="text-[0.9rem] font-semibold tracking-tight">
               Continue watching / reading
             </h2>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-[var(--fg-muted)]">
               One tap +1 — keep the streak going
             </p>
           </div>

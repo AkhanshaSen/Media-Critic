@@ -64,10 +64,10 @@ export function PageLayoutPicker({
                 disabled={busy}
                 onClick={() => void pick(t)}
                 className={cn(
-                  "rounded-xl border p-2 text-left transition-all",
+                  "rounded-[var(--r-md)] border p-2 text-left transition-[border-color,background-color] duration-100 ease-out",
                   value === t
-                    ? "border-amber-400 bg-amber-400/10 ring-1 ring-amber-400/40"
-                    : "border-border hover:border-amber-400/40",
+                    ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+                    : "border-border hover:border-[color-mix(in_oklch,var(--accent),transparent_50%)]",
                 )}
               >
                 <LayoutThumb kind={t} />

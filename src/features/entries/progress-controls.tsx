@@ -55,18 +55,18 @@ export function ProgressControls({
   return (
     <div
       className={cn(
-        "border-border/80 bg-card/50 space-y-2 rounded-xl border shadow-sm shadow-black/15",
-        compact ? "p-2.5" : "space-y-3 p-4 shadow-lg shadow-black/20",
+        "border-border bg-card space-y-2 rounded-[var(--r-lg)] border",
+        compact ? "p-2.5" : "space-y-3 p-4",
       )}
     >
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+          <p className="text-[0.6875rem] font-medium tracking-wide text-[var(--fg-muted)] uppercase">
             {labels.current}
           </p>
           <p
             className={cn(
-              "font-semibold tabular-nums tracking-tight",
+              "font-mono font-semibold tabular-nums tracking-tight",
               compact ? "text-base" : "text-lg",
             )}
           >
@@ -107,7 +107,7 @@ export function ProgressControls({
       {!compact ? <ProgressPace entry={display} /> : null}
 
       {banner ? (
-        <p className="rounded-lg bg-amber-500/15 px-3 py-2 text-xs font-medium text-amber-100">
+        <p className="rounded-[var(--r-sm)] bg-[var(--accent-dim)] px-3 py-2 text-xs font-medium text-[var(--fg-base)]">
           {banner}
         </p>
       ) : null}

@@ -41,10 +41,10 @@ export function ThemeToggle({ className }: { className?: string }) {
             aria-pressed={active}
             onClick={() => setTheme(value)}
             className={cn(
-              "inline-flex size-8 items-center justify-center rounded-md transition-colors",
+              "inline-flex size-8 items-center justify-center rounded-[var(--r-sm)] transition-[background-color,color] duration-100 ease-out",
               active
-                ? "bg-amber-400 text-amber-950 shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-[var(--fg-muted)] hover:bg-muted hover:text-foreground",
             )}
           >
             <Icon className="size-3.5" aria-hidden />

@@ -38,17 +38,16 @@ export function AppSidebar() {
   return (
     <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border hidden w-60 shrink-0 border-r md:flex md:flex-col">
       <div className="border-sidebar-border relative overflow-hidden border-b px-5 py-7">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-400/25 via-orange-600/10 to-transparent" />
         <Link
           href="/dashboard/"
-          className="relative text-xl font-bold tracking-tight"
+          className="relative text-xl font-bold tracking-tight font-[family-name:var(--font-display)]"
         >
           Media Critic
         </Link>
-        <p className="text-muted-foreground relative mt-1 text-xs">
+        <p className="relative mt-1 text-xs text-[var(--fg-muted)]">
           Your reviews, one shelf
         </p>
-        <div className="relative mt-4 h-px w-12 bg-gradient-to-r from-amber-400/80 to-transparent" />
+        <div className="relative mt-4 h-px w-12 bg-gradient-to-r from-[var(--accent)]/80 to-transparent" />
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
         {navItems.map((item) => {
@@ -59,12 +58,12 @@ export function AppSidebar() {
             return (
               <span
                 key={item.href}
-                className="text-muted-foreground flex cursor-not-allowed items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm"
+                className="flex cursor-not-allowed items-center gap-2.5 rounded-[var(--r-md)] px-3 py-2.5 text-sm text-[var(--fg-subtle)]"
                 title="Coming later"
               >
                 <Icon className="size-4 opacity-60" aria-hidden />
                 {item.label}
-                <span className="ml-auto text-[10px] uppercase tracking-wide opacity-70">
+                <span className="ml-auto text-[10px] tracking-wide uppercase opacity-70">
                   soon
                 </span>
               </span>
@@ -76,10 +75,10 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                "flex items-center gap-2.5 rounded-[var(--r-md)] border-l-2 border-transparent px-3 py-2.5 text-sm transition-[background-color,border-color] duration-100 ease-out",
                 isActive
-                  ? "bg-amber-400/15 font-semibold text-amber-800 ring-1 ring-amber-400/30 dark:text-amber-300"
-                  : "hover:bg-sidebar-accent/70",
+                  ? "border-l-[var(--accent)] bg-[var(--accent-dim)] font-semibold text-[var(--fg-base)]"
+                  : "hover:bg-sidebar-accent/70 text-[var(--fg-muted)]",
               )}
             >
               <Icon className="size-4 shrink-0" aria-hidden />
@@ -108,7 +107,7 @@ export function MobileTabBar() {
           return (
             <span
               key={item.href}
-              className="text-muted-foreground flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 text-[11px]"
+              className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 text-[11px] text-[var(--fg-subtle)]"
             >
               <Icon className="size-4 opacity-50" aria-hidden />
               {item.label}
@@ -121,10 +120,10 @@ export function MobileTabBar() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px]",
+              "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] transition-colors duration-100 ease-out",
               isActive
-                ? "font-semibold text-amber-800 dark:text-amber-300"
-                : "text-muted-foreground",
+                ? "font-semibold text-[var(--accent)]"
+                : "text-[var(--fg-muted)]",
             )}
           >
             <Icon className="size-4" aria-hidden />

@@ -18,7 +18,7 @@ export function ProgressBar({
   return (
     <div
       className={cn(
-        "bg-muted/80 h-2 w-full overflow-hidden rounded-full",
+        "h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-sunken)]",
         className,
       )}
       role="progressbar"
@@ -28,8 +28,10 @@ export function ProgressBar({
     >
       <div
         className={cn(
-          "from-primary to-amber-400/90 h-full rounded-full bg-gradient-to-r transition-[width] duration-500 ease-out",
-          pulse && "animate-pulse",
+          "h-full rounded-full bg-primary",
+          "transition-[width] duration-[400ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+          pulse &&
+            "bg-[linear-gradient(90deg,var(--accent)_25%,color-mix(in_oklch,var(--accent),white_35%)_50%,var(--accent)_75%)] bg-[length:200%_100%] motion-safe:animate-[shimmer_1.2s_ease-in-out_infinite]",
         )}
         style={{ width: `${width}%` }}
       />

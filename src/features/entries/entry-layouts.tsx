@@ -48,16 +48,16 @@ export function EntryLayoutByTemplate({
 function MetaPills({ entry }: { entry: MediaEntry }) {
   const format = entry.consumption_format ?? "digital";
   return (
-    <div className="flex flex-wrap gap-2 text-[11px] font-medium tracking-wide uppercase">
+    <div className="flex flex-wrap gap-2 text-[0.6875rem] font-medium tracking-wide uppercase">
       <MediaTypeBadge type={entry.media_type} />
-      <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
+      <span className="rounded-[var(--r-sm)] bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
         {STATUS_LABELS[entry.status]}
       </span>
-      <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
+      <span className="rounded-[var(--r-sm)] bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
         {CONSUMPTION_FORMAT_LABELS[format]}
       </span>
       {entry.year ? (
-        <span className="rounded-full bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
+        <span className="rounded-[var(--r-sm)] bg-white/15 px-2.5 py-1 text-white/90 backdrop-blur">
           {entry.year}
         </span>
       ) : null}
@@ -67,8 +67,8 @@ function MetaPills({ entry }: { entry: MediaEntry }) {
 
 function ScoreBadge({ entry }: { entry: MediaEntry }) {
   return (
-    <div className="rounded-xl bg-amber-400 px-3 py-2 shadow-md shadow-amber-900/30">
-      <p className="text-[10px] font-bold tracking-widest text-amber-950 uppercase">
+    <div className="rounded-[var(--r-md)] bg-primary px-3 py-2 shadow-sm">
+      <p className="text-[10px] font-bold tracking-widest text-primary-foreground uppercase">
         Score
       </p>
       <div className="mt-0.5 flex items-center justify-center">
@@ -102,14 +102,18 @@ function ProgressTrack({
 
 function TimelineCard({ entry }: { entry: MediaEntry }) {
   return (
-    <Card className="border-white/10 bg-card/60">
-      <CardHeader>
-        <CardTitle className="text-base">Timeline</CardTitle>
+    <Card className="border-[var(--border-soft)] bg-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-[0.9rem] font-semibold text-[var(--fg-muted)]">
+          Timeline
+        </CardTitle>
       </CardHeader>
-      <CardContent className="text-muted-foreground space-y-1 text-sm">
+      <CardContent className="space-y-1 text-sm text-[var(--fg-muted)]">
         <p>Started: {entry.started_on ?? "—"}</p>
         <p>Finished: {entry.finished_on ?? "—"}</p>
-        <p className="tabular-nums">Progress: {formatProgress(entry)}</p>
+        <p className="font-mono tabular-nums">
+          Progress: {formatProgress(entry)}
+        </p>
       </CardContent>
     </Card>
   );
@@ -162,7 +166,7 @@ function ReviewBlocks({
       />
 
       {!hide && entry.verdict ? (
-        <Card className="border-white/10 bg-card/60">
+        <Card className="border-[var(--border-soft)] bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Verdict</CardTitle>
           </CardHeader>
@@ -173,7 +177,7 @@ function ReviewBlocks({
       ) : null}
 
       {!hide ? (
-        <Card className="border-white/10 bg-card/60">
+        <Card className="border-[var(--border-soft)] bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
               {entry.review_title || "What I thought"}
@@ -199,7 +203,7 @@ function ReviewBlocks({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs text-amber-800 dark:text-amber-200"
+                className="rounded-[var(--r-sm)] border border-[var(--accent-dim)] bg-[var(--accent-dim)] px-3 py-1 text-xs text-[var(--fg-base)]"
               >
                 {tag}
               </span>
@@ -229,7 +233,7 @@ export function CinematicLayout({
       style={accentStyle}
     >
       <section
-        className={`relative min-h-[240px] overflow-hidden rounded-2xl border border-white/10 shadow-xl md:min-h-[280px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+        className={`relative min-h-[240px] overflow-hidden rounded-[var(--r-xl)] border border-[var(--border-soft)] shadow-xl md:min-h-[280px] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
         style={{
           boxShadow: `0 20px 40px -16px var(--entry-glow, rgb(0 0 0 / 0.45))`,
         }}
@@ -256,7 +260,7 @@ export function CinematicLayout({
                 className="w-20 rounded-xl object-cover shadow-lg ring-1 ring-white/15 sm:w-24 md:w-32"
               />
             ) : (
-              <div className="bg-card/60 flex w-28 flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 p-4 text-center md:w-44 md:min-h-[240px]">
+              <div className="bg-card/60 flex w-28 flex-col items-center justify-center gap-2 rounded-[var(--r-lg)] border border-[var(--border-soft)] p-4 text-center md:w-44 md:min-h-[240px]">
                 <p className="text-sm text-white/90">No poster</p>
                 <Link
                   href={`/entries/edit/?id=${entry.id}`}
@@ -286,7 +290,7 @@ export function CinematicLayout({
         <div className="space-y-4">
           <ProgressTrack entry={entry} onEntryChange={onEntryChange} />
           {entry.synopsis ? (
-            <Card className="border-white/10 bg-card/60">
+            <Card className="border-[var(--border-soft)] bg-card">
               <CardHeader>
                 <CardTitle className="text-base">Synopsis</CardTitle>
               </CardHeader>
@@ -334,29 +338,29 @@ export function MagazineLayout({
             <img
               src={posterUrl}
               alt=""
-              className="w-full rounded-2xl object-cover shadow-2xl ring-1"
+              className="w-full rounded-[var(--r-lg)] object-cover shadow-2xl ring-1"
               style={{
                 boxShadow: `0 0 0 1px var(--entry-accent, rgb(251 191 36 / 0.2))`,
               }}
             />
           ) : (
             <div
-              className={`aspect-[2/3] rounded-2xl bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
+              className={`aspect-[2/3] rounded-[var(--r-lg)] bg-gradient-to-br ${MEDIA_TYPE_GRADIENT[entry.media_type]}`}
             />
           )}
           <ScoreBadge entry={entry} />
-          <div className="text-muted-foreground space-y-1 border-y border-white/10 py-3 text-sm">
+          <div className="text-muted-foreground space-y-1 border-y border-[var(--border-soft)] py-3 text-sm">
             <p>
-              <span className="text-amber-300">Type</span>{" "}
+              <span className="text-[var(--accent)]">Type</span>{" "}
               {MEDIA_TYPE_LABELS[entry.media_type]}
             </p>
             <p>
-              <span className="text-amber-300">Status</span>{" "}
+              <span className="text-[var(--accent)]">Status</span>{" "}
               {STATUS_LABELS[entry.status]}
             </p>
             {entry.year ? (
               <p>
-                <span className="text-amber-300">Year</span> {entry.year}
+                <span className="text-[var(--accent)]">Year</span> {entry.year}
               </p>
             ) : null}
           </div>
@@ -365,7 +369,7 @@ export function MagazineLayout({
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-amber-400/40 px-3 py-1 text-xs text-amber-100"
+                  className="rounded-[var(--r-sm)] border border-[var(--accent-dim)] bg-[var(--accent-dim)] px-3 py-1 text-xs text-[var(--fg-base)]"
                 >
                   {tag}
                 </span>
@@ -385,7 +389,7 @@ export function MagazineLayout({
               {entry.title}
             </h1>
             {entry.original_title ? (
-              <p className="text-sky-300 mt-2 text-sm">{entry.original_title}</p>
+              <p className="text-[var(--accent)] mt-2 text-sm">{entry.original_title}</p>
             ) : null}
           </div>
 
@@ -427,7 +431,7 @@ export function MinimalLayout({
       className="mx-auto flex w-full max-w-3xl flex-col gap-5"
       style={accentStyle}
     >
-      <Card className="overflow-hidden border-white/10 bg-card/60">
+      <Card className="overflow-hidden border-[var(--border-soft)] bg-card">
         <div className="flex gap-4 p-4">
           {posterUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -468,7 +472,7 @@ export function MinimalLayout({
       <TimelineCard entry={entry} />
 
       {entry.synopsis ? (
-        <Card className="border-white/10 bg-card/60">
+        <Card className="border-[var(--border-soft)] bg-card">
           <CardHeader>
             <CardTitle className="text-base">Synopsis</CardTitle>
           </CardHeader>

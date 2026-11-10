@@ -62,7 +62,7 @@ export function EntryPageChrome({
       {notice ? (
         <p
           role="status"
-          className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100"
+          className="rounded-[var(--r-md)] border border-[var(--accent-dim)] bg-[var(--accent-dim)] px-3 py-2 text-xs text-[var(--fg-base)]"
         >
           {notice}
         </p>

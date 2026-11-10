@@ -156,8 +156,8 @@ export function ShareStudioDialog({
                   className={cn(
                     "rounded-md px-2.5 py-1.5 text-[11px] font-medium capitalize transition-colors",
                     previewTheme === t
-                      ? "bg-amber-400 text-amber-950"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "bg-primary text-primary-foreground"
+                      : "text-[var(--fg-muted)] hover:text-foreground",
                   )}
                 >
                   {t}
@@ -169,7 +169,7 @@ export function ShareStudioDialog({
                 type="checkbox"
                 checked={showShelfAvg}
                 onChange={(e) => setShowShelfAvg(e.target.checked)}
-                className="accent-amber-400 size-3.5 rounded"
+                className="accent-primary size-3.5 rounded"
               />
               All-time avg
             </label>
@@ -179,7 +179,7 @@ export function ShareStudioDialog({
                   type="checkbox"
                   checked={watermarkEnabled}
                   onChange={(e) => onWatermarkChange(e.target.checked)}
-                  className="accent-amber-400 size-3.5 rounded"
+                  className="accent-primary size-3.5 rounded"
                 />
                 Watermark
               </label>
@@ -187,7 +187,7 @@ export function ShareStudioDialog({
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold tracking-widest text-amber-700 uppercase dark:text-amber-300/90">
+            <p className="text-[10px] font-semibold tracking-widest text-[var(--fg-muted)] uppercase">
               Share card
             </p>
             <div className="grid gap-2 sm:grid-cols-3">

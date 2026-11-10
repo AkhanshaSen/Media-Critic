@@ -24,15 +24,15 @@ export function EmptyShelfIllustration({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-dashed p-8 text-center sm:p-10",
+        "rounded-[var(--r-lg)] border border-dashed p-8 text-center sm:p-10",
         shelf
           ? "border-[var(--shelf-border)] bg-[var(--shelf-surface)]"
-          : "border-border",
+          : "border-[color-mix(in_oklch,var(--border-sharp),transparent_40%)]",
       )}
     >
       <svg
         viewBox="0 0 120 80"
-        className="text-muted-foreground/40 mx-auto h-16 w-24"
+        className="mx-auto h-16 w-24 text-[var(--fg-subtle)]"
         aria-hidden
       >
         <rect
@@ -68,8 +68,8 @@ export function EmptyShelfIllustration({
       </p>
       <p
         className={cn(
-          "mt-2 text-sm",
-          shelf ? "shelf-muted" : "text-muted-foreground",
+          "mt-2 text-sm font-normal",
+          shelf ? "shelf-muted" : "text-[var(--fg-muted)]",
         )}
       >
         {description}
@@ -78,10 +78,10 @@ export function EmptyShelfIllustration({
         <Link
           href={primaryHref}
           className={cn(
-            "inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold",
+            "inline-flex min-h-11 items-center rounded-[var(--r-md)] px-3 text-sm font-semibold transition-[background-color] duration-[90ms] ease-out",
             shelf
               ? "shelf-cta"
-              : "bg-primary text-primary-foreground hover:bg-primary/90",
+              : "bg-primary text-primary-foreground hover:bg-primary/85",
           )}
         >
           {primaryLabel}
@@ -89,7 +89,7 @@ export function EmptyShelfIllustration({
         {secondaryHref && secondaryLabel ? (
           <Link
             href={secondaryHref}
-            className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-lg border px-3 text-sm font-medium"
+            className="border-border hover:bg-muted inline-flex min-h-11 items-center rounded-[var(--r-md)] border px-3 text-sm font-medium transition-[background-color] duration-[90ms] ease-out"
           >
             {secondaryLabel}
           </Link>

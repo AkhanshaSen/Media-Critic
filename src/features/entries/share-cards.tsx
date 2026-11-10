@@ -55,10 +55,10 @@ export function ShareCardPreview({
       type="button"
       onClick={onSelect}
       className={cn(
-        "w-full overflow-hidden rounded-xl border text-left transition-all",
+        "w-full overflow-hidden rounded-[var(--r-md)] border text-left transition-[border-color,box-shadow] duration-100 ease-out",
         selected
-          ? "border-amber-400 ring-2 ring-amber-400/40"
-          : "border-white/10 hover:border-amber-400/40",
+          ? "border-[var(--accent)] shadow-[0_0_0_1px_var(--accent)]"
+          : "border-[var(--border-soft)] hover:border-[color-mix(in_oklch,var(--accent),transparent_50%)]",
       )}
     >
       <div
